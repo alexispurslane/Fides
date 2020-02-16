@@ -55,7 +55,7 @@ interface PersonRef { initialScore: number, uid: string, role: Role, person: fir
 export interface Contract {
     uniqid: string,
     title: string,
-    deadline: Date,
+    deadline: string,
     desc?: string,
 
     people: { [uid: string]: PersonRef },
@@ -65,6 +65,11 @@ export interface Contract {
 export function associateContract(ref: firebase.database.Reference, uid: string) {
     ref.once('value', snapshot => {
         let contract = snapshot.val() as Contract;
+        contract.roles = contract.roles || {};
+        contract.people = contract.people || {};
+
+        console.log(uid);
+
         let role: Role | null = null;
         if (!contract.roles[Role.Initiator]) {
             role = Role.Initiator;
@@ -75,27 +80,23 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
         }
 
         if (role) {
-            let person = fireapp.database().ref('/people/' + uid);
-            person.once('value', snapshot => {
+            fireapp.database().ref('/people/' + uid).once('value', snapshot => {
                 let pr = {
                     initialScore: snapshot.val().score,
                     uid: uid,
-                    person: person,
                     role: role
                 };
                 let updates: { [path: string]: any } = {};
-                updates['roles/' + role]      = pr;
+                updates['roles/' + role] = pr;
                 updates['people/' + uid] = pr;
                 ref.update(updates);
-            }, e => {
-                console.log("User not found: " + uid);
             });
         }
     });
 }
 
 export function canBeginReviewing(contract: Contract, uid: string, time: Date): boolean {
-    return contract.roles[Role.Other] && regularizeDate(time) >= contract.deadline &&
+    return contract.roles[Role.Other] && regularizeDate(time) >= new Date(contract.deadline) &&
         ((contract.roles[Role.Arbitrator] && contract.roles[Role.Arbitrator].uid === uid) ||
          uid in contract.people);
 }
@@ -117,7 +118,7 @@ export function review(contract: Contract, uid: string, target: string, rating: 
         throw new Error("Rating is out of acceptible range.");
     }
 
-    let targetPerson = contract.people[target].person;
+    let targetPerson = fireapp.database().ref('/people/' + contract.people[target].uid);
     rating = rating < 0 ? 1.0 / 10^(Math.abs(rating) / 2) : rating;
     targetPerson.child('ratings/' + contract.uniqid).set({
         uid: uid,
@@ -133,7 +134,7 @@ export function newPerson(person: Person) {
     fireapp.database().ref('/people').child(id).set(person);
 }
 
-export function newContract(contract: Contract) {
+export function newContract(contract: Contract): firebase.database.Reference {
     let contractKey = fireapp.database().ref('/contracts').push().key;
     if (contractKey) {
         contract.uniqid = contractKey;
@@ -141,6 +142,8 @@ export function newContract(contract: Contract) {
 
     let ref = fireapp.database().ref('/contracts/' + contractKey);
     ref.set(contract);
+    console.log(contract);
     // @ts-ignore: Object is possibly 'null'.
     associateContract(ref, fireapp.auth().currentUser?.uid);
+    return ref;
 }

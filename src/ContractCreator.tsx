@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import * as database from './DataOperations';
 import CSS from 'csstype';
+import { Link } from 'react-router-dom';
 
 interface CCState {
     title: string,
@@ -9,6 +10,8 @@ interface CCState {
     desc: string,
     userlist: [string | null, string | null],
     people: database.Person[],
+    isValid: boolean,
+    showBanner: boolean,
 }
 
 export class ContractCreator extends React.Component<{}, CCState> {
@@ -21,15 +24,21 @@ export class ContractCreator extends React.Component<{}, CCState> {
             desc: '',
             userlist: [null, null],
             people: [],
+            isValid: false,
+            showBanner: false,
         };
     }
-
 
     componentDidMount() {
         database.fireapp.database().ref('/people').on('value', snapshot => {
             let people: database.Person[] = [];
             snapshot.forEach(item => {
-                people.push(item.val());
+                let v = item.val();
+                let auth = database.fireapp;
+                // @ts-ignore: Object is possibly 'null'.
+                if (v.uid != auth.auth().currentUser.uid) {
+                    people.push(v);
+                }
             })
             this.setState({ people: people });
         });
@@ -45,20 +54,39 @@ export class ContractCreator extends React.Component<{}, CCState> {
         } else if (data == 'deadline') {
             this.setState({ deadline: event.target.value });
         }
+        this.setState({ isValid: this.state.title != '' &&
+                                 this.state.userlist[0] != null &&
+                                 this.state.deadline != '' });
     }
 
-    handleSubmit(event: any) {
-        let c: database.Contract = {
-            uniqid: "",
-            title: this.state.title,
-            deadline: new Date(this.state.deadline),
-            desc: this.state.desc,
-            people: {},
-            roles: {}
-        };
-        // TODO: Make UI for selecting people to get their UID to associate via.
-        database.newContract(c);
+    handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        if (this.state.userlist[0]) {
+            let c: database.Contract = {
+                uniqid: "",
+                title: this.state.title,
+                deadline: this.state.deadline,
+                desc: this.state.desc,
+                people: {},
+                roles: {}
+            };
+            let ref = database.newContract(c);
+            database.associateContract(ref, this.state.userlist[0]);
+            if (this.state.userlist[1]) {
+                database.associateContract(ref, this.state.userlist[1]);
+            }
+            this.setState({
+                title: '',
+                deadline: '',
+                desc: '',
+                userlist: [null, null],
+                isValid:false,
+                showBanner: true,
+            });
+            setTimeout(_ => {
+                this.setState({ showBanner: false });
+            }, 3500);
+        }
     }
 
     onPersonSelection = (ty: number, uid: string) => {
@@ -71,6 +99,9 @@ export class ContractCreator extends React.Component<{}, CCState> {
                 if (ty != -1) {
                     nl[ty] = uid;
                 }
+                this.setState({ isValid: this.state.title != '' &&
+                                         nl[0] != null &&
+                                         this.state.deadline != '' });
                 return {
                     userlist: nl
                 };
@@ -84,8 +115,8 @@ export class ContractCreator extends React.Component<{}, CCState> {
         // onClick and when it's clicked it sets the 'selected user' to that ID.
         // Then when a button is cilcked, it'll be addded.
         return (
-            <div>
-                <h2>Create New Contract</h2>
+            <div style={{ margin: '10px auto', width: '80%' }}>
+                <h2 style={{ textAlign: 'center' }}>Create New Contract</h2>
                 <form onSubmit={this.handleSubmit}>
                     <label>
                         <h3>Contract Title</h3>
@@ -113,7 +144,10 @@ export class ContractCreator extends React.Component<{}, CCState> {
                                     selection={this.onPersonSelection} /> )}
                     </label>
                     <br/>
-                    <input type="submit" value="Submit" />
+                    <input style={{margin: '0 auto', display: 'block'}}
+                           type="submit" value="Submit" disabled={!this.state.isValid} />
+                    {this.state.showBanner ?
+                     <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
                 </form>
             </div>
         );
@@ -123,25 +157,32 @@ export class ContractCreator extends React.Component<{}, CCState> {
 function Person(props: { data: database.Person,
                          selected: number,
                          selection: (ty: number, uid: string) => boolean }) {
-    function doTheThing(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, ty: number) {
+    function callHandlerWrapped(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, ty: number) {
         e.preventDefault();
         props.selection(ty, props.data.uid)
         console.log(ty);
     }
     const style: CSS.Properties = {
         backgroundColor: props.selected == 0 ? 'green' : props.selected == 1 ? 'red' : 'blue',
-        color: props.selected == 0 ? 'black' : props.selected == 1 ? 'white' : 'white'
+        color: props.selected == 0 ? 'black' : props.selected == 1 ? 'white' : 'white',
+        height: '32px',
+        padding: '5px 5px 5px 5px'
     };
-    console.log("Selected: " + props.selected);
     return (
         <div style={style}>
-            <label>
-                <img width="30" src={props.data.metadata.photo} />
-                {props.data.metadata.name}
-            </label>
-            <button key="other" onClick={e => doTheThing(e, 0)}>Other</button>
-            <button key="arbitrator" onClick={e => doTheThing(e, 1)}>Arbitrator</button>
-            <button key="deselect" onClick={e => doTheThing(e, -1)}>X</button>
+            <span style={{ position: 'relative' }}>
+                <img style={{ float: 'left', width: '32px', paddingRight: '10px', display: 'block' }}
+                     src={props.data.metadata.photo} />
+                <span style={{ width: '300px', position:'absolute', top: '21px' }}>{props.data.metadata.name}</span>
+            </span>
+            <span style={{ float: 'right' }}>
+                <button disabled={props.selected == 0}
+                        key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
+                <button disabled={props.selected == 1}
+                        key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
+                <button disabled={props.selected == -1}
+                        key="deselect" onClick={e => callHandlerWrapped(e, -1)}>X</button>
+            </span>
         </div>
     );
 }
