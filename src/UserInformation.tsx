@@ -9,7 +9,7 @@ interface UIProps {
 }
 
 interface UIState {
-    info?: { name: string, photo: string, email: string, bio?: string },
+    info?: { name: string, photo: string, email: string, bio?: string, score: number },
     showBanner: boolean
 }
 
@@ -21,8 +21,8 @@ export class UserInformation extends React.Component<UIProps, UIState> {
 
     componentDidMount() {
         database.fireapp.database()
-            .ref('/people/' + this.props.user + '/metadata').on('value', snapshot => {
-                this.setState({ info: snapshot.val() });
+            .ref('/people/' + this.props.user).on('value', snapshot => {
+                this.setState({ info: Object.assign(snapshot.val().metadata, { score: snapshot.val().score }) });
             })
     }
 
@@ -46,51 +46,45 @@ export class UserInformation extends React.Component<UIProps, UIState> {
             display: 'block',
             height: '50px'
         };
-        if (this.props.editible) {
-            return (
-                <div style={{ margin: '10px auto', width: '80%' }}>
-                    <h2 style={{ textAlign: 'center' }}>User Bio</h2>
-                    <form onSubmit={this.handleSubmit}>
-                        <label style={groupStyle}>
-                            Display Name:
+        let internals = (
+            <form onSubmit={this.handleSubmit}>
+                <label style={groupStyle}>
+                    Display Name:
                     <input type="text" placeholder="Display Name"
-                                style={inputStyle}
-                                value={this.state.info?.name} onChange={e => this.handleChange(e, 'name')} />
-                        </label>
-                        <br />
-                        <label style={groupStyle}>
-                            Email Address:
+                        style={inputStyle}
+                        value={this.state.info?.name} onChange={e => this.handleChange(e, 'name')} />
+                </label>
+                <br />
+                <label style={groupStyle}>
+                    Email Address:
                 <input type="email" placeholder="Email Address"
-                                style={inputStyle}
-                                value={this.state.info?.email} onChange={e => this.handleChange(e, 'email')} />
-                        </label>
-                        <br />
-                        <label style={groupStyle}>
-                            Avatar URL:
+                        style={inputStyle}
+                        value={this.state.info?.email} onChange={e => this.handleChange(e, 'email')} />
+                </label>
+                <br />
+                <label style={groupStyle}>
+                    Avatar URL:
                     <input type="url" placeholder="Avatar URL"
-                                style={inputStyle}
-                                value={this.state.info?.photo} onChange={e => this.handleChange(e, 'photo')} />
-                        </label>
-                        <br />
-                        <label>
-                            <h3>User Bio</h3>
-                            <textarea placeholder="I am an elephant" style={inputStyle}
-                                value={this.state.info?.bio}
-                                onChange={e => this.handleChange(e, 'bio')}>
-                            </textarea>
-                        </label>
-                        <br />
-                        <input style={{ margin: '0 auto', display: 'block' }}
-                            type="submit" value="Submit" />
-                        {this.state.showBanner ?
-                            <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
-                    </form>
-                </div>
-            );
-        } else {
-            return (
-                <div style={{ margin: '10px auto', width: '80%' }}>
-                    <h2 style={{ textAlign: 'center' }}>User Bio</h2>
+                        style={inputStyle}
+                        value={this.state.info?.photo} onChange={e => this.handleChange(e, 'photo')} />
+                </label>
+                <br />
+                <label>
+                    <h3>User Bio</h3>
+                    <textarea placeholder="I am an elephant" style={{ marginBottom: '22px', width: '100%' }}
+                        value={this.state.info?.bio}
+                        onChange={e => this.handleChange(e, 'bio')}>
+                    </textarea>
+                </label>
+                <br />
+                <input style={{ margin: '0 auto', display: 'block' }}
+                    type="submit" value="Submit" />
+                {this.state.showBanner ?
+                    <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
+            </form>);
+        if (!this.props.editible) {
+            internals = (
+                <div>
                     <div>
                         <label style={groupStyle}>
                             Display Name:
@@ -109,11 +103,17 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                         <br />
                         <label>
                             <h3>User Bio</h3>
-                            <p style={inputStyle}>{this.state.info?.bio}</p>
+                            <p>{this.state.info?.bio}</p>
                         </label>
                     </div>
                 </div>
-            );
+            )
         }
+        return (
+            <div style={{ margin: '10px auto', width: '80%' }}>
+                <h2 style={{ textAlign: 'center' }}>User Bio</h2>
+                {internals}
+            </div>
+        );
     }
 }
