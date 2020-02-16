@@ -10,7 +10,6 @@ interface CCState {
     desc: string,
     userlist: [string | null, string | null],
     people: database.Person[],
-    isValid: boolean,
     showBanner: boolean,
 }
 
@@ -24,7 +23,6 @@ export class ContractCreator extends React.Component<{}, CCState> {
             desc: '',
             userlist: [null, null],
             people: [],
-            isValid: false,
             showBanner: false,
         };
     }
@@ -45,18 +43,8 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 
     handleChange(event: any, data: string) {
-        if (data == 'desc') {
-            this.setState({ desc: event.target.value });
-        } else if (data == 'title') {
-            this.setState({ title: event.target.value });
-        } else if (data == 'userlist') {
-            this.setState({ userlist: event.target.value });
-        } else if (data == 'deadline') {
-            this.setState({ deadline: event.target.value });
-        }
-        this.setState({ isValid: this.state.title != '' &&
-                                 this.state.userlist[0] != null &&
-                                 this.state.deadline != '' });
+        let newState = Object.assign(this.state, { [data]: event.target.value });
+        this.setState(newState);
     }
 
     handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -80,7 +68,6 @@ export class ContractCreator extends React.Component<{}, CCState> {
                 deadline: '',
                 desc: '',
                 userlist: [null, null],
-                isValid:false,
                 showBanner: true,
             });
             setTimeout(_ => {
@@ -90,73 +77,76 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 
     onPersonSelection = (ty: number, uid: string) => {
-            this.setState(state => {
-                let nl = state.userlist;
-                const index = nl.indexOf(uid);
-                if (index > -1) {
-                    nl.splice(index, 1);
-                }
-                if (ty != -1) {
-                    nl[ty] = uid;
-                }
-                this.setState({ isValid: this.state.title != '' &&
-                                         nl[0] != null &&
-                                         this.state.deadline != '' });
-                return {
-                    userlist: nl
-                };
-            });
+        let nl = this.state.userlist;
+        const index = nl.indexOf(uid);
+        if (index > -1) {
+            nl.splice(index, 1);
+        }
+        if (ty != -1) {
+            nl[ty] = uid;
+        }
+        this.setState({ userlist: nl });
         return false;
     }
 
     render() {
-        // TODO: Get list of users, convert to little HTML elements with name
-        // and avatar. Each one has a closure that captures it's uID attached to
-        // onClick and when it's clicked it sets the 'selected user' to that ID.
-        // Then when a button is cilcked, it'll be addded.
+        const inputStyle: CSS.Properties = {
+            float: 'right'
+        };
+        const groupStyle: CSS.Properties = {
+            display: 'block',
+            height: '50px'
+        };
         return (
             <div style={{ margin: '10px auto', width: '80%' }}>
                 <h2 style={{ textAlign: 'center' }}>Create New Contract</h2>
                 <form onSubmit={this.handleSubmit}>
-                    <label>
-                        <h3>Contract Title</h3>
+                    <label style={groupStyle}>
+                        Contract Title
                         <input type="text" placeholder="Buy me lunch"
-                               value={this.state.title} onChange={e => this.handleChange(e, 'title')}/>
+                            style={inputStyle}
+                            value={this.state.title} onChange={e => this.handleChange(e, 'title')} />
                     </label>
-                    <br/>
-                    <label>
-                        <h3>Contract Description of Requirements</h3>
+                    <br />
+                    <label style={groupStyle}>
+                        Contract Description of Requirements
                         <textarea placeholder="Please deilver 93lbs of Sushi to my location (999 Insane Square)."
-                                  value={this.state.desc} onChange={e => this.handleChange(e, 'desc')}/>
+                            style={inputStyle}
+                            value={this.state.desc} onChange={e => this.handleChange(e, 'desc')} />
                     </label>
-                    <br/>
-                    <label>
-                        <h3>Contract Deadline</h3>
+                    <br />
+                    <label style={groupStyle}>
+                        Contract Deadline
                         <input type="date" value={this.state.deadline}
-                               onChange={e => this.handleChange(e, 'deadline')}/>
+                            style={inputStyle}
+                            onChange={e => this.handleChange(e, 'deadline')} />
                     </label>
-                    <br/>
+                    <br />
                     <label>
                         <h3>Other Participant (Prospective) and Arbitrator (Optional)</h3>
                         {this.state.people.map((p: database.Person) =>
                             <Person key={p.uid} data={p}
-                                    selected={this.state.userlist.indexOf(p.uid)}
-                                    selection={this.onPersonSelection} /> )}
+                                selected={this.state.userlist.indexOf(p.uid)}
+                                selection={this.onPersonSelection} />)}
                     </label>
-                    <br/>
-                    <input style={{margin: '0 auto', display: 'block'}}
-                           type="submit" value="Submit" disabled={!this.state.isValid} />
+                    <br />
+                    <input style={{ margin: '0 auto', display: 'block' }}
+                        type="submit" value="Submit" disabled={!(this.state.title != '' &&
+                            this.state.userlist[0] != null &&
+                            this.state.deadline != '')} />
                     {this.state.showBanner ?
-                     <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
+                        <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
                 </form>
             </div>
         );
     }
 }
 
-function Person(props: { data: database.Person,
-                         selected: number,
-                         selection: (ty: number, uid: string) => boolean }) {
+function Person(props: {
+    data: database.Person,
+    selected: number,
+    selection: (ty: number, uid: string) => boolean
+}) {
     function callHandlerWrapped(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, ty: number) {
         e.preventDefault();
         props.selection(ty, props.data.uid)
@@ -172,16 +162,17 @@ function Person(props: { data: database.Person,
         <div style={style}>
             <span style={{ position: 'relative' }}>
                 <img style={{ float: 'left', width: '32px', paddingRight: '10px', display: 'block' }}
-                     src={props.data.metadata.photo} />
-                <span style={{ width: '300px', position:'absolute', top: '21px' }}>{props.data.metadata.name}</span>
+                    src={props.data.metadata.photo} />
+                <Link style={{ width: '300px', position: 'absolute', top: '21px' }}
+                    to={`/dashboard/${props.data.uid}`}>{props.data.metadata.name}</Link>
             </span>
             <span style={{ float: 'right' }}>
                 <button disabled={props.selected == 0}
-                        key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
+                    key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
                 <button disabled={props.selected == 1}
-                        key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
+                    key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
                 <button disabled={props.selected == -1}
-                        key="deselect" onClick={e => callHandlerWrapped(e, -1)}>X</button>
+                    key="deselect" onClick={e => callHandlerWrapped(e, -1)}>X</button>
             </span>
         </div>
     );

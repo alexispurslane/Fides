@@ -37,7 +37,41 @@ export function updateScore(ref: firebase.database.Reference) {
             let newscore = total / (unique_people + Math.floor(Object.keys(person.ratings).length / 2));
             let places = Math.trunc(Math.abs(Math.ceil(Math.log10(newscore)))) + 1;
             ref.set({
-                'score':Math.round(newscore * places) / places
+                'score': Math.round(newscore * places) / places
+            });
+        }
+    });
+}
+
+export function rejectContract(ref: firebase.database.Reference, uniqid: string) {
+    ref.once('value', personSnap => {
+        if (personSnap.val().pending) {
+            Object.entries(personSnap.val().pending).forEach(([key, value]) => {
+                if (value === uniqid) {
+                    ref.child('pending/' + key).remove();
+                    fireapp.database().ref('/contracts/' + value).remove();
+                }
+            });
+        }
+    });
+}
+
+export function acceptContract(ref: firebase.database.Reference, uniqid: string) {
+    ref.once('value', personSnap => {
+        if (personSnap.val().pending) {
+            Object.entries(personSnap.val().pending).forEach(([key, value]) => {
+                if (value === uniqid) {
+                    ref.child('pending/' + key).remove();
+                    ref.child('ratings/' + uniqid).set({ uid: "" });
+
+                    let path1 = '/contracts/' + value + '/people/' + personSnap.val().uid;
+                    fireapp.database().ref(path1 + '/accepted').set(true);
+
+                    fireapp.database().ref(path1 + '/role').once('value', roleSnap => {
+                        let path2 = '/contracts/' + value + '/roles/' + roleSnap.val() + '/accepted';
+                        fireapp.database().ref(path2).set(true);
+                    });
+                }
             });
         }
     });
@@ -50,7 +84,13 @@ function regularizeDate(date: Date) {
 }
 
 enum Role { Initiator = "initiator", Other = "other", Arbitrator = "arbitrator" }
-interface PersonRef { initialScore: number, uid: string, role: Role, person: firebase.database.Reference }
+
+interface PersonRef {
+    initialScore: number,
+    uid: string,
+    role: Role,
+    accepted: boolean,
+}
 
 export interface Contract {
     uniqid: string,
@@ -68,8 +108,6 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
         contract.roles = contract.roles || {};
         contract.people = contract.people || {};
 
-        console.log(uid);
-
         let role: Role | null = null;
         if (!contract.roles[Role.Initiator]) {
             role = Role.Initiator;
@@ -80,15 +118,25 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
         }
 
         if (role) {
-            fireapp.database().ref('/people/' + uid).once('value', snapshot => {
+            let pref = fireapp.database().ref('/people/' + uid);
+            pref.once('value', snapshot => {
                 let pr = {
                     initialScore: snapshot.val().score,
                     uid: uid,
-                    role: role
+                    role: role,
+                    accepted: role == Role.Initiator,
                 };
                 let updates: { [path: string]: any } = {};
                 updates['roles/' + role] = pr;
                 updates['people/' + uid] = pr;
+
+                // @ts-ignore: Object is possibly 'null'.
+                if (uid !== fireapp.auth().currentUser.uid) {
+                    let key = pref.child('pending').push().key;
+                    if (key) {
+                        pref.child('pending/' + key).set(contract.uniqid);
+                    }
+                }
                 ref.update(updates);
             });
         }
@@ -98,7 +146,7 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
 export function canBeginReviewing(contract: Contract, uid: string, time: Date): boolean {
     return contract.roles[Role.Other] && regularizeDate(time) >= new Date(contract.deadline) &&
         ((contract.roles[Role.Arbitrator] && contract.roles[Role.Arbitrator].uid === uid) ||
-         uid in contract.people);
+            uid in contract.people);
 }
 
 export function review(contract: Contract, uid: string, target: string, rating: number) {
@@ -119,7 +167,7 @@ export function review(contract: Contract, uid: string, target: string, rating: 
     }
 
     let targetPerson = fireapp.database().ref('/people/' + contract.people[target].uid);
-    rating = rating < 0 ? 1.0 / 10^(Math.abs(rating) / 2) : rating;
+    rating = rating < 0 ? 1.0 / 10 ^ (Math.abs(rating) / 2) : rating;
     targetPerson.child('ratings/' + contract.uniqid).set({
         uid: uid,
         rating: contract.people[uid].initialScore * rating
