@@ -31,13 +31,14 @@ export interface Person {
 export function updateScore(ref: firebase.database.Reference) {
     ref.once('value', snapshot => {
         let person = snapshot.val() as Person;
-        if (Object.keys(person.ratings).length > 0) {
-            let total = Object.values(person.ratings).map(x => x.rating).reduce((acc, x) => acc + x, 0);
-            let unique_people = Object.values(person.ratings).map(x => x.uid).length;
-            let newscore = total / (unique_people + Math.floor(Object.keys(person.ratings).length / 2));
+        let ratings = Object.values(person.ratings).filter((x: Rating) => !!x.rating);
+        if (Object.keys(ratings).length > 0) {
+            let total = ratings.reduce((acc, x) => acc + x.rating, 0);
+            let unique_people = ratings.map(x => x.uid).length;
+            let newscore = total / (unique_people + Math.floor(ratings.length / 2));
             let places = Math.trunc(Math.abs(Math.ceil(Math.log10(newscore)))) + 1;
             ref.set({
-                'score': Math.round(newscore * places) / places
+                score: Math.round(newscore * places) / places
             });
         }
     });
@@ -78,12 +79,12 @@ export function acceptContract(ref: firebase.database.Reference, uniqid: string)
 }
 
 function regularizeDate(date: Date) {
-    let n = Object.create(date);
+    let n = new Date(date);
     n.setHours(0, 0, 0, 0);
     return n;
 }
 
-enum Role { Initiator = "initiator", Other = "other", Arbitrator = "arbitrator" }
+export enum Role { Initiator = "initiator", Other = "other", Arbitrator = "arbitrator" }
 
 interface PersonRef {
     initialScore: number,
@@ -143,21 +144,22 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
     });
 }
 
-export function canBeginReviewing(contract: Contract, uid: string, time: Date): boolean {
-    return contract.roles[Role.Other] && regularizeDate(time) >= new Date(contract.deadline) &&
-        ((contract.roles[Role.Arbitrator] && contract.roles[Role.Arbitrator].uid === uid) ||
-            uid in contract.people);
-}
-
 export function review(contract: Contract, uid: string, target: string, rating: number) {
-    if (contract.people.other === undefined) {
-        throw new Error("No other users to review!");
+    if (!contract.roles[Role.Other]) {
+        throw new Error("Not enough people to review.");
     }
-    if (!(uid in Object.keys(contract.people))) {
+    if (regularizeDate(new Date()) < new Date(contract.deadline)) {
+        throw new Error("You cannot review before deadline!");
+    }
+    if (contract.roles[Role.Arbitrator] && contract.roles[Role.Arbitrator].uid !== uid) {
+        throw new Error("Only the arbitrator can review in this contract.");
+    }
+    if (!Object.keys(contract.people).includes(uid)) {
+        console.log(uid, Object.keys(contract.people))
+        throw new Error("Your are not in this contract.");
+    }
+    if (!Object.keys(contract.people).includes(target)) {
         throw new Error("That's not a person in this contract!");
-    }
-    if (!canBeginReviewing(contract, uid, new Date())) {
-        throw new Error("You can't review at this time.");
     }
     if (uid === target) {
         throw new Error("You cannot review yourself!")

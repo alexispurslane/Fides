@@ -97,6 +97,19 @@ export class ContractCreator extends React.Component<{}, CCState> {
             display: 'block',
             height: '50px'
         };
+
+        function formatDate(d: Date) {
+            let month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+            return [year, month, day].join('-');
+        }
+
         return (
             <div style={{ margin: '10px auto', width: '80%' }}>
                 <h2 style={{ textAlign: 'center' }}>Create New Contract</h2>
@@ -119,6 +132,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                         Contract Deadline
                         <input type="date" value={this.state.deadline}
                             style={inputStyle}
+                            min={formatDate(new Date())}
                             onChange={e => this.handleChange(e, 'deadline')} />
                     </label>
                     <br />
@@ -161,9 +175,9 @@ function Person(props: {
     return (
         <div style={style}>
             <span style={{ position: 'relative' }}>
-                <img style={{ float: 'left', width: '32px', paddingRight: '10px', display: 'block' }}
+                <img style={{ float: 'left', width: '32px', height: '32px', paddingRight: '10px', display: 'block' }}
                     src={props.data.metadata.photo} />
-                <Link style={{ width: '300px', position: 'absolute', top: '21px' }}
+                <Link style={{ width: '300px', position: 'absolute', top: '21px', color: 'white' }}
                     to={`/dashboard/${props.data.uid}`}>{props.data.metadata.name}</Link>
             </span>
             <span style={{ float: 'right' }}>

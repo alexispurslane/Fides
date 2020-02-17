@@ -46,8 +46,17 @@ export class UserInformation extends React.Component<UIProps, UIState> {
             display: 'block',
             height: '50px'
         };
+        const score = this.state.info?.score || 0.00;
+        const scoreColor = score > 1 ? 'green' : score < 0.04 ? 'red' : 'blue';
+        const scoreStyle: CSS.Properties = {
+            fontWeight: 'bold',
+            fontSize: '30px',
+            color: scoreColor,
+            textAlign: 'center'
+        };
         let internals = (
             <form onSubmit={this.handleSubmit}>
+
                 <label style={groupStyle}>
                     Display Name:
                     <input type="text" placeholder="Display Name"
@@ -112,6 +121,11 @@ export class UserInformation extends React.Component<UIProps, UIState> {
         return (
             <div style={{ margin: '10px auto', width: '80%' }}>
                 <h2 style={{ textAlign: 'center' }}>User Bio</h2>
+                <div style={{ border: '1px solid black' }}>
+                    <p style={{ fontVariant: 'small-caps', textAlign: 'center' }}>SCORE</p>
+                    <p style={scoreStyle}>{this.state.info?.score}</p>
+                </div>
+                <br />
                 {internals}
             </div>
         );
