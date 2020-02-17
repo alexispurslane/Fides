@@ -89,9 +89,6 @@ class Dashboard extends React.Component<DashProps, DashState> {
                         </ul>
 
                         <Switch>
-                            <Route path={`${match.path}/contract/:contractId`}>
-                                <Contract />
-                            </Route>
                             <Route path={`${match.path}/accept`}>
                                 <ContractAccept />
                             </Route>

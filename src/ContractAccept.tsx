@@ -4,6 +4,7 @@ import CSS from 'csstype';
 import {
     Link,
 } from 'react-router-dom';
+import { Contract } from './Contract';
 
 interface AcceptState {
     pendingContracts: database.Contract[],
@@ -55,78 +56,12 @@ export class ContractAccept extends React.Component<{}, AcceptState> {
         return (
             <div>
                 <h2>Accept Contracts and Arbitration Requests</h2>
-                {this.state.pendingContracts.map(c => <Contract data={c}
-                    selection={(ty, uniqid) => this.handleSelection(ty, uniqid)} />)}
-            </div>
-        );
-    }
-}
-
-// TODO: Unify these two contract views (this one and the one in ./Rate.tsx) somehow.
-interface ContractProps {
-    data: database.Contract,
-    selection: (ty: number, uniqid: string) => void
-}
-
-function capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-class Contract extends React.Component<ContractProps, { users: database.Person[] }> {
-    constructor(props: ContractProps) {
-        super(props);
-        this.state = {
-            users: []
-        }
-    }
-
-    callHandlerWrapped = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, ty: number) => {
-        e.preventDefault();
-        this.props.selection(ty, this.props.data.uniqid)
-    }
-
-    componentDidMount() {
-        Object.values(this.props.data.people).forEach(contractEntry => {
-            database.fireapp.database().ref('/people/' + contractEntry.uid)
-                .orderByChild("metadata/name")
-                .on('value', snapshot => {
-                    this.setState(state => {
-                        return {
-                            users: Object.assign(state.users, { [contractEntry.uid]: snapshot.val() })
-                        };
-                    });
-                });
-        });
-    }
-
-    render() {
-        const style: CSS.Properties = {
-            border: '1px solid black',
-            margin: '10px auto',
-            width: '80%'
-        };
-        // @ts-ignore: Object is possibly 'null'.
-        const cuid = database.fireapp.auth().currentUser.uid;
-        return (
-            <div style={style}>
-                <div>
-                    <h2>{this.props.data.title}</h2>
-                    <h3>Details</h3>
-                    <p><b>Deadline:</b> {this.props.data.deadline}</p>
-                    <p><b>Instructions:</b><br />{this.props.data.desc}</p>
-                    <h3>People</h3>
-                    {Object.values(this.state.users).map(u => <div>
-                        <p>
-                            <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
-                            <Link to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
-                        </p>
-                    </div>
-                    )}
-                </div>
-                <div>
-                    <button key="accept" onClick={e => this.callHandlerWrapped(e, 0)}>Accept</button>
-                    <button key="reject" onClick={e => this.callHandlerWrapped(e, 1)}>Reject</button>
-                </div>
+                {this.state.pendingContracts.map(c => (
+                    <Contract data={c}>
+                        <button key="accept" onClick={e => this.handleSelection(0, c.uniqid)}>Accept</button>
+                        <button key="reject" onClick={e => this.handleSelection(1, c.uniqid)}>Reject</button>
+                    </Contract>
+                ))}
             </div>
         );
     }
