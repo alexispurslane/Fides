@@ -62,16 +62,21 @@ export class ContractAccept extends React.Component<{}, AcceptState> {
     }
 }
 
+// TODO: Unify these two contract views (this one and the one in ./Rate.tsx) somehow.
 interface ContractProps {
     data: database.Contract,
     selection: (ty: number, uniqid: string) => void
 }
 
-class Contract extends React.Component<ContractProps, { userName: string }> {
+function capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+class Contract extends React.Component<ContractProps, { users: database.Person[] }> {
     constructor(props: ContractProps) {
         super(props);
         this.state = {
-            userName: "Unknown"
+            users: []
         }
     }
 
@@ -81,10 +86,17 @@ class Contract extends React.Component<ContractProps, { userName: string }> {
     }
 
     componentDidMount() {
-        database.fireapp.database().ref('/people/' + this.props.data.roles.initiator.uid + '/metadata/name')
-            .once('value', snapshot => {
-                this.setState({ userName: snapshot.val() });
-            });
+        Object.values(this.props.data.people).forEach(contractEntry => {
+            database.fireapp.database().ref('/people/' + contractEntry.uid)
+                .orderByChild("metadata/name")
+                .on('value', snapshot => {
+                    this.setState(state => {
+                        return {
+                            users: Object.assign(state.users, { [contractEntry.uid]: snapshot.val() })
+                        };
+                    });
+                });
+        });
     }
 
     render() {
@@ -97,18 +109,24 @@ class Contract extends React.Component<ContractProps, { userName: string }> {
         const cuid = database.fireapp.auth().currentUser.uid;
         return (
             <div style={style}>
-                <span>
-                    <h3>{this.props.data.title}</h3>
-                    <p><b>Requested Role:</b> {this.props.data.people[cuid].role}</p>
-                    <p>
-                        <b>Initiator:</b>
-                        <Link to={`/dashboard/${this.props.data.roles.initiator.uid}`}>{this.state.userName}</Link>
-                    </p>
-                </span>
-                <span>
+                <div>
+                    <h2>{this.props.data.title}</h2>
+                    <h3>Details</h3>
+                    <p><b>Deadline:</b> {this.props.data.deadline}</p>
+                    <p><b>Instructions:</b><br />{this.props.data.desc}</p>
+                    <h3>People</h3>
+                    {Object.values(this.state.users).map(u => <div>
+                        <p>
+                            <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
+                            <Link to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
+                        </p>
+                    </div>
+                    )}
+                </div>
+                <div>
                     <button key="accept" onClick={e => this.callHandlerWrapped(e, 0)}>Accept</button>
                     <button key="reject" onClick={e => this.callHandlerWrapped(e, 1)}>Reject</button>
-                </span>
+                </div>
             </div>
         );
     }

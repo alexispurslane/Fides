@@ -28,7 +28,10 @@ export class UserInformation extends React.Component<UIProps, UIState> {
 
     handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        database.fireapp.database().ref('/people/' + this.props.user + '/metadata').set(this.state.info);
+        database.fireapp.database()
+            .ref('/people/' + this.props.user + '/metadata')
+            .set(Object.assign(this.state.info, { score: undefined }));
+
         this.setState({ showBanner: true });
         setTimeout(_ => this.setState({ showBanner: false }), 3500);
     }

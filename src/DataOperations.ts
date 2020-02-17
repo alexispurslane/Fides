@@ -37,9 +37,7 @@ export function updateScore(ref: firebase.database.Reference) {
             let unique_people = ratings.map(x => x.uid).length;
             let newscore = total / (unique_people + Math.floor(ratings.length / 2));
             let places = Math.trunc(Math.abs(Math.ceil(Math.log10(newscore)))) + 1;
-            ref.set({
-                score: Math.round(newscore * places) / places
-            });
+            ref.child('score').set(Math.round(newscore * Math.pow(10, places)) / Math.pow(10, places));
         }
     });
 }
@@ -137,6 +135,8 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
                     if (key) {
                         pref.child('pending/' + key).set(contract.uniqid);
                     }
+                } else {
+                    pref.child('ratings/' + contract.uniqid).set({ uid: "" });
                 }
                 ref.update(updates);
             });
@@ -192,7 +192,6 @@ export function newContract(contract: Contract): firebase.database.Reference {
 
     let ref = fireapp.database().ref('/contracts/' + contractKey);
     ref.set(contract);
-    console.log(contract);
     // @ts-ignore: Object is possibly 'null'.
     associateContract(ref, fireapp.auth().currentUser?.uid);
     return ref;

@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 
 interface RateState {
-    contracts: database.Contract[],
+    contracts: { [uniqid: string]: database.Contract },
     currentUid: string
 }
 
@@ -15,7 +15,7 @@ export class Rate extends React.Component<{}, RateState> {
         super(props);
 
         this.state = {
-            contracts: [],
+            contracts: {},
             currentUid: ""
         }
     }
@@ -25,14 +25,15 @@ export class Rate extends React.Component<{}, RateState> {
             if (user) {
                 this.setState({ currentUid: user.uid });
                 database.fireapp.database().ref('/people/' + user.uid + '/ratings').on('value', ratingsSnap => {
-                    this.setState({ contracts: [] })
                     if (ratingsSnap.val() != null) {
                         Object.keys(ratingsSnap.val()).forEach(uniqid => {
-                            database.fireapp.database().ref('/contracts/' + uniqid).once('value', contractSnap => {
+                            database.fireapp.database().ref('/contracts/' + uniqid).on('value', contractSnap => {
+                                console.log(uniqid, contractSnap.val());
                                 this.setState(state => {
                                     return {
-                                        contracts: state.contracts.concat([contractSnap.val()])
-                                    }
+                                        contracts: Object.assign(state.contracts,
+                                            { [uniqid]: contractSnap.val() })
+                                    };
                                 });
                             });
                         });
@@ -46,7 +47,8 @@ export class Rate extends React.Component<{}, RateState> {
         return (
             <div>
                 <h2>Currently Active Contracts</h2>
-                {this.state.contracts.map(c => <Contract data={c} currentUid={this.state.currentUid} />)}
+                {Object.entries(this.state.contracts).map(([uniqid, c]) =>
+                    <Contract key={uniqid} data={c} currentUid={this.state.currentUid} />)}
             </div>
         );
     }
@@ -89,6 +91,7 @@ class Contract extends React.Component<ContractProps, { users: database.Person[]
                     });
                 });
         });
+        console.log(this.state.users, this.props.data.people);
     }
 
     render() {
@@ -99,22 +102,26 @@ class Contract extends React.Component<ContractProps, { users: database.Person[]
         };
         // @ts-ignore: Object is possibly 'null'.
         const cuid = database.fireapp.auth().currentUser.uid;
+        const stylize = (u: any) => {
+            return { color: this.props.data.people[u.uid].accepted ? 'green' : 'red' };
+        }
         return (
             <div style={style}>
-                <span>
-                    <h3>{this.props.data.title}</h3>
-                    <p><b>Role:</b> {this.props.data.people[cuid].role}</p>
+                <div>
+                    <h2>{this.props.data.title}</h2>
+                    <h3>Details</h3>
                     <p><b>Deadline:</b> {this.props.data.deadline}</p>
-                    <p><b>Details:</b> {this.props.data.desc}</p>
+                    <p><b>Instructions:</b><br />{this.props.data.desc}</p>
+                    <h3>People</h3>
                     {Object.values(this.state.users).map(u => <div>
                         <p>
                             <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
-                            <Link to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
+                            <Link style={stylize(u)} to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
                         </p>
                     </div>
                     )}
-                </span>
-                <span>
+                </div>
+                <div>
                     {Object.values(this.state.users).map(u => {
                         if (u.uid != this.props.currentUid &&
                             this.props.data.people[u.uid].role != database.Role.Arbitrator) {
@@ -126,7 +133,7 @@ class Contract extends React.Component<ContractProps, { users: database.Person[]
                             );
                         }
                     })}
-                </span>
+                </div>
             </div>
         );
     }
