@@ -51,12 +51,15 @@ export class Contract extends React.Component<ContractProps, { users: database.P
                     <p><b>Deadline:</b> {this.props.data.deadline}</p>
                     <p><b>Instructions:</b><br />{this.props.data.desc}</p>
                     <h3>People</h3>
-                    {Object.values(this.state.users).map(u => <div>
-                        <p>
-                            <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
-                            <Link to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
-                        </p>
-                    </div>
+                    {Object.values(this.state.users).map(u => {
+                        let udata = this.props.data.people[u.uid];
+                        return <div>
+                            <p>
+                                <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
+                                <Link style={{ color: udata.accepted ? 'green' : 'red' }} to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
+                            </p>
+                        </div>;
+                    }
                     )}
                 </div>
                 <div>

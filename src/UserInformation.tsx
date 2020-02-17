@@ -30,7 +30,7 @@ export class UserInformation extends React.Component<UIProps, UIState> {
         event.preventDefault();
         database.fireapp.database()
             .ref('/people/' + this.props.user + '/metadata')
-            .set(Object.assign(this.state.info, { score: undefined }));
+            .set(Object.assign(this.state.info, { score: null }));
 
         this.setState({ showBanner: true });
         setTimeout(_ => this.setState({ showBanner: false }), 3500);
@@ -111,11 +111,6 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                         <label style={groupStyle}>
                             Avatar URL:
                     <p style={inputStyle}>{this.state.info?.photo}</p>
-                        </label>
-                        <br />
-                        <label>
-                            <h3>User Bio</h3>
-                            <p>{this.state.info?.bio}</p>
                         </label>
                     </div>
                 </div>

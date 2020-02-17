@@ -21,7 +21,7 @@ interface MatchParams {
 interface DashProps extends RouteComponentProps<MatchParams> { }
 
 interface DashState {
-    info?: { name: string, email: string, photo: string },
+    info?: { name: string, email: string, photo: string, bio?: string },
     uid?: string,
     error?: Error
 }
@@ -57,9 +57,11 @@ class Dashboard extends React.Component<DashProps, DashState> {
 
     render() {
         const photoStyle: CSS.Properties = {
-            'width': '32px',
-            'float': 'left',
-            'paddingRight': '10px'
+            width: '50px',
+            display: 'block',
+            marginLeft: 'auto',
+            borderRadius: '50%',
+            marginRight: 'auto'
         };
         // @ts-ignore: Object is possibly 'null'.
         const cuser = database.fireapp.auth().currentUser;
@@ -68,25 +70,30 @@ class Dashboard extends React.Component<DashProps, DashState> {
             if (!this.state.error) {
                 return (
                     <div>
-                        <div id="header">
-                            <img src={this.state.info?.photo} style={photoStyle} />
-                            <h1>Welcome to your dashboard, {this.state.info?.name || "unknown"}</h1>
-                        </div>
-
-                        <ul>
-                            <li>
-                                <Link to={`/dashboard/${match.params.uid}`}>Profile</Link>
+                        <ul className="nav nav-pills nav-fill">
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`/dashboard/${match.params.uid}`}>Profile</Link>
                             </li>
-                            <li>
-                                <Link to={`${match.url}/accept`}>Accept Contracts</Link>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`${match.url}/accept`}>Accept Contracts</Link>
                             </li>
-                            <li>
-                                <Link to={`${match.url}/create`}>Create Contracts</Link>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`${match.url}/create`}>Create Contracts</Link>
                             </li>
-                            <li>
-                                <Link to={`${match.url}/review`}>Active Contracts</Link>
+                            <li className="nav-item">
+                                <Link className="nav-link" to={`${match.url}/review`}>Active Contracts</Link>
                             </li>
                         </ul>
+                        <div className="jumbotron jumbotron-fluid">
+                            <div className="container" style={{ textAlign: 'center' }}>
+                                <img src={this.state.info?.photo} style={photoStyle} />
+                                <h1 className="display-4">
+
+                                    {this.state.info?.name || "unknown"}
+                                </h1>
+                                <p className="lead">Welcome to your dashboard. This is where you manage your profile and contracts. Keep a close eye on that score!</p>
+                            </div>
+                        </div>
 
                         <Switch>
                             <Route path={`${match.path}/accept`}>
@@ -110,12 +117,18 @@ class Dashboard extends React.Component<DashProps, DashState> {
         } else {
             return (
                 <div>
-                    <div id="header">
-                        <img src={this.state.info?.photo} style={photoStyle} />
-                        <h1>User Profile: {this.state.info?.name || "unknown"}</h1>
-                        <div>
-                            <UserInformation user={this.props.match.params.uid} editible={false} />
+                    <div className="jumbotron jumbotron-fluid">
+                        <div className="container" style={{ textAlign: 'center' }}>
+                            <img src={this.state.info?.photo} style={photoStyle} />
+                            <h1 className="display-4">
+
+                                {this.state.info?.name || "unknown"}
+                            </h1>
+                            <p className="lead">{this.state.info?.bio}</p>
                         </div>
+                    </div>
+                    <div>
+                        <UserInformation user={this.props.match.params.uid} editible={false} />
                     </div>
                 </div>
             );
