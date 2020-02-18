@@ -50,57 +50,69 @@ export class UserInformation extends React.Component<UIProps, UIState> {
             height: '50px'
         };
         const score = this.state.info?.score || 0.00;
-        const scoreColor = score > 1 ? 'green' : score < 0.04 ? 'red' : 'blue';
-        const scoreStyle: CSS.Properties = {
-            fontWeight: 'bold',
-            fontSize: '30px',
-            color: scoreColor,
-            textAlign: 'center'
-        };
+        const scoreColor = score > 1 ? 'success' : score < 0.04 ? 'danger' : 'warning';
         let internals = (
             <form onSubmit={this.handleSubmit}>
+                <div className="form-group row">
+                    <label htmlFor="name" className="col-sm-2 col-form-label">Display name</label>
+                    <div className="col-sm-10">
+                        <input className="form-control" type="text" placeholder="Display name" id="name"
+                            aria-describedby="nameHelp"
+                            value={this.state.info?.name}
+                            onChange={e => this.handleChange(e, 'name')} />
+                        <small id="nameHelp" className="form-text text-muted">
+                            This is public, but should not be a pseudonym.
+                        </small>
+                    </div>
+                </div>
 
-                <label style={groupStyle}>
-                    Display Name:
-                    <input type="text" placeholder="Display Name"
-                        style={inputStyle}
-                        value={this.state.info?.name} onChange={e => this.handleChange(e, 'name')} />
-                </label>
+                <div className="form-group row">
+                    <label htmlFor="email" className="col-sm-2 col-form-label">Email address</label>
+                    <div className="col-sm-10">
+                        <input className="form-control" type="email" placeholder="Public email address" id="email"
+                            aria-describedby="emailHelp"
+                            value={this.state.info?.email}
+                            onChange={e => this.handleChange(e, 'email')} />
+                        <small id="emailHelp" className="form-text text-muted">
+                            This is your public email address. The one that Fides uses to identify you is secret. Make this blank if you want.
+                </small>
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label htmlFor="image" className="col-sm-2 col-form-label">Avatar URL</label>
+                    <div className="col-sm-10">
+                        <input className="form-control" type="url" placeholder="Avatar URL" id="image"
+                            aria-describedby="imageHelp"
+                            value={this.state.info?.photo}
+                            onChange={e => this.handleChange(e, 'photo')} />
+                        <small id="imageHelp" className="form-text text-muted">
+                            Hosting/uploading will be offered soon.
+                </small>
+                    </div>
+                </div>
+
+                <div className="form-group row">
+                    <label htmlFor="bio" className="col-sm-2 col-form-label">Biography</label>
+                    <div className="col-sm-10">
+                        <textarea className="form-control" placeholder="Useful information about yourself. Keep it short!" id="bio"
+                            value={this.state.info?.bio}
+                            onChange={e => this.handleChange(e, 'bio')} />
+                    </div>
+                </div>
                 <br />
-                <label style={groupStyle}>
-                    Email Address:
-                <input type="email" placeholder="Email Address"
-                        style={inputStyle}
-                        value={this.state.info?.email} onChange={e => this.handleChange(e, 'email')} />
-                </label>
+                <input className="btn btn-primary" type="submit" value="Submit" />
                 <br />
-                <label style={groupStyle}>
-                    Avatar URL:
-                    <input type="url" placeholder="Avatar URL"
-                        style={inputStyle}
-                        value={this.state.info?.photo} onChange={e => this.handleChange(e, 'photo')} />
-                </label>
-                <br />
-                <label>
-                    <h3>User Bio</h3>
-                    <textarea placeholder="I am an elephant" style={{ marginBottom: '22px', width: '100%' }}
-                        value={this.state.info?.bio}
-                        onChange={e => this.handleChange(e, 'bio')}>
-                    </textarea>
-                </label>
-                <br />
-                <input style={{ margin: '0 auto', display: 'block' }}
-                    type="submit" value="Submit" />
                 {this.state.showBanner ?
-                    <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
+                    <div className="alert alert-success" role="alert"> Info successfully updated! </div> : null}
             </form>);
         if (!this.props.editible) {
             internals = (
                 <div>
                     <div>
-                        <label style={groupStyle}>
+                        <label>
                             Display Name:
-                    <p style={inputStyle}>{this.state.info?.name}</p>
+                    <p>{this.state.info?.name}</p>
                         </label>
                         <br />
                         <label style={groupStyle}>
@@ -108,20 +120,17 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                     <p style={inputStyle}>{this.state.info?.email}</p>
                         </label>
                         <br />
-                        <label style={groupStyle}>
-                            Avatar URL:
-                    <p style={inputStyle}>{this.state.info?.photo}</p>
-                        </label>
                     </div>
                 </div>
             )
         }
         return (
             <div style={{ margin: '10px auto', width: '80%' }}>
-                <h2 style={{ textAlign: 'center' }}>User Bio</h2>
-                <div style={{ border: '1px solid black' }}>
-                    <p style={{ fontVariant: 'small-caps', textAlign: 'center' }}>SCORE</p>
-                    <p style={scoreStyle}>{this.state.info?.score}</p>
+                <div className="card mx-auto" style={{ width: '18rem' }}>
+                    <div className="card-body" style={{ textAlign: 'center' }}>
+                        <h5 className="card-title" style={{ fontVariant: 'small-caps' }}>SCORE</h5>
+                        <h1><span className={`badge badge-${scoreColor}`}>{this.state.info?.score}</span></h1>
+                    </div>
                 </div>
                 <br />
                 {internals}

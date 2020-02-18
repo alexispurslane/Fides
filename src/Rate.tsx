@@ -56,21 +56,29 @@ export class Rate extends React.Component<{}, RateState> {
         return (
             <div>
                 <h2>Currently Active Contracts</h2>
-                {Object.entries(this.state.contracts).map(([uniqid, c]) => (
-                    <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
-                        return Object.values(users).map((u: database.Person) => {
-                            if (u.uid != this.state.currentUid &&
-                                c.people[u.uid].role != database.Role.Arbitrator) {
-                                return (
-                                    <button key={`rate-${u.uid}`}
-                                        onClick={e => this.callHandlerWrapped(e, c, u.uid)}>
-                                        Rate {u.metadata.name}
-                                    </button>
-                                );
-                            }
-                        });
-                    }} />
-                ))}
+                <div className="card-columns justify-content-center">
+                    {Object.entries(this.state.contracts).map(([uniqid, c]) => (
+                        <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
+                            let roles = Object.values(users).map((u: database.Person) => {
+                                if (u.uid != this.state.currentUid &&
+                                    c.people[u.uid].role != database.Role.Arbitrator) {
+                                    return (
+                                        <button key={`rate-${u.uid}`}
+                                            className="btn btn-info btn-sm"
+                                            onClick={e => this.callHandlerWrapped(e, c, u.uid)}>
+                                            Rate {u.metadata.name}
+                                        </button>
+                                    );
+                                }
+                            });
+                            return (
+                                <div className="btn-group" role="role-group" aria-label="Users involved">
+                                    {roles}
+                                </div>
+                            );
+                        }} />
+                    ))}
+                </div>
             </div>
         );
     }

@@ -36,35 +36,26 @@ export class Contract extends React.Component<ContractProps, { users: database.P
     }
 
     render() {
-        const style: CSS.Properties = {
-            border: '1px solid black',
-            margin: '10px auto',
-            width: '80%'
-        };
         // @ts-ignore: Object is possibly 'null'.
         const cuid = database.fireapp.auth().currentUser.uid;
         return (
-            <div style={style}>
-                <div>
-                    <h2>{this.props.data.title}</h2>
-                    <h3>Details</h3>
-                    <p><b>Deadline:</b> {this.props.data.deadline}</p>
-                    <p><b>Instructions:</b><br />{this.props.data.desc}</p>
-                    <h3>People</h3>
-                    {Object.values(this.state.users).map(u => {
-                        let udata = this.props.data.people[u.uid];
-                        return <div>
-                            <p>
-                                <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
-                                <Link style={{ color: udata.accepted ? 'green' : 'red' }} to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
-                            </p>
-                        </div>;
-                    }
-                    )}
-                </div>
-                <div>
+            <div className="card m-1">
+                <div className="card-body">
+                    <h5 className="card-title">{this.props.data.title}</h5>
+                    <h6 className="card-subtitle mb-2 text-muted">{this.props.data.deadline}</h6>
+                    <p className="card-text">{this.props.data.desc}</p>
                     {!!this.props.render ? this.props.render(this.state.users) : this.props.children}
                 </div>
+                <ul className="list-group list-group-flush">
+                    {Object.values(this.state.users).map(u => {
+                        let udata = this.props.data.people[u.uid];
+                        return <li className="list-group-item">
+                            <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
+                            <Link style={{ color: udata.accepted ? 'green' : 'red' }} to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
+                        </li>;
+                    }
+                    )}
+                </ul>
             </div>
         );
     }

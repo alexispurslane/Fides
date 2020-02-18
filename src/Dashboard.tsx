@@ -121,7 +121,6 @@ class Dashboard extends React.Component<DashProps, DashState> {
                         <div className="container" style={{ textAlign: 'center' }}>
                             <img src={this.state.info?.photo} style={photoStyle} />
                             <h1 className="display-4">
-
                                 {this.state.info?.name || "unknown"}
                             </h1>
                             <p className="lead">{this.state.info?.bio}</p>
