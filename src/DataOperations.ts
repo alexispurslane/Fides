@@ -28,14 +28,32 @@ export interface Person {
     metadata: { email: string, name: string, photo: string },
 }
 
+function adjustRatingWeight(rating: number, x: number): number {
+    const d = 6.5;
+    const u = 10;
+    const adjustment = 30
+        * (1 / (d * Math.sqrt(2 * Math.PI)))
+        * Math.pow(Math.E, (-0.5) * Math.pow((x - u) / d, 2));
+    return Math.max(0.2, rating * adjustment);
+}
+
 export function updateScore(ref: firebase.database.Reference) {
     ref.once('value', snapshot => {
         let person = snapshot.val() as Person;
+        // Take only the entries that actually have a rating, i.e. from finished contracts
         let ratings = Object.values(person.ratings).filter((x: Rating) => !!x.rating);
         if (Object.keys(ratings).length > 0) {
-            let total = ratings.reduce((acc, x) => acc + x.rating, 0);
-            let unique_people = ratings.map(x => x.uid).length;
-            let newscore = total / (unique_people + Math.floor(ratings.length / 2));
+            // count the number of times each user has interacted with this one
+            let raters: { [uid: string]: number } = {};
+            Object.entries(person.ratings).forEach(([uniqid, rating]) => {
+                raters[rating.uid] = (raters[rating.uid] || 0) + 1;
+            });
+            // sum up all the ratings from each user, adjusted for the amount of
+            // experience that user has with this one
+            let total = ratings.reduce((acc, x) => acc + adjustRatingWeight(x.rating, raters[x.uid]), 0);
+            // Take the weighted average of the other users' ratings
+            let newscore = total / ratings.length;
+            // make it not have ugly decimals
             let places = Math.trunc(Math.abs(Math.ceil(Math.log10(newscore)))) + 1;
             ref.child('score').set(Math.round(newscore * Math.pow(10, places)) / Math.pow(10, places));
         }
@@ -166,6 +184,9 @@ export function review(contract: Contract, uid: string, target: string, rating: 
     }
     if (rating > 10 || rating < -10) {
         throw new Error("Rating is out of acceptible range.");
+    }
+    if (!contract.people[target].accepted) {
+        throw new Error("This person has not accepted the invitation yet!");
     }
 
     let targetPerson = fireapp.database().ref('/people/' + contract.people[target].uid);

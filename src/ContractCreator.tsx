@@ -156,7 +156,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                             this.state.deadline != '')} />
                     {this.state.showBanner ?
                         <div className="alert alert-primary" role="alert">
-                            Contract successfully created and sent!
+                            <b>Success</b> Contract successfully created and sent!
                      </div> : null}
                     <br />
                     <br />

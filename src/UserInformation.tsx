@@ -50,7 +50,7 @@ export class UserInformation extends React.Component<UIProps, UIState> {
             height: '50px'
         };
         const score = this.state.info?.score || 0.00;
-        const scoreColor = score > 1 ? 'success' : score < 0.04 ? 'danger' : 'warning';
+        const scoreColor = score > 2 ? 'success' : score < 0.5 ? 'danger' : 'warning';
         let internals = (
             <div>
                 <h2>Edit Profile Information</h2>
@@ -106,7 +106,7 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                     <input className="btn btn-primary" type="submit" value="Submit" />
                     <br />
                     {this.state.showBanner ?
-                        <div className="alert alert-success" role="alert"> Info successfully updated! </div> : null}
+                        <div className="alert alert-success" role="alert"><b>Succes</b> Info successfully updated! </div> : null}
                 </form>
             </div>
         );
