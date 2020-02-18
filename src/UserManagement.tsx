@@ -8,21 +8,34 @@ import { Link } from 'react-router-dom';
 const fireui = new firebaseui.auth.AuthUI(database.fireapp.auth());
 
 class SignOut extends React.Component<{ history?: any }, {}> {
-    signOut = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    signOut(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): boolean {
         database.fireapp.auth().signOut().then(() => {
             console.log("logged out");
-            this.props.history.push('/');
+            window.location.href = "/";
         }).catch(e => {
             console.log(e);
         });
+        return true;
     }
 
     render() {
         return (
-            <div>
-                <h2>Are you sure you want to sign out?</h2>
-                <button onClick={this.signOut}>Yes</button>
-                <Link to="/dashboard">No</Link>
+            <div className="modal" role="dialog" id="myModal">
+                <div className="modal-dialog" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Are you sure you want to sign out?</h5>
+                        </div>
+                        <div className="modal-body">
+                            <p>You can sign right back in anytime!</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-danger" data-dismiss="modal"
+                                onClick={this.signOut.bind(this)}>Sign Out</button>
+                            <button className="btn btn-secondary" data-dismiss="modal">Nevermind</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

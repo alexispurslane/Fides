@@ -4,6 +4,7 @@ import * as database from './DataOperations';
 import CSS from 'csstype';
 import {
     Switch,
+    matchPath,
     Route,
     Link,
     RouteComponentProps
@@ -58,11 +59,21 @@ class Dashboard extends React.Component<DashProps, DashState> {
     render() {
         const photoStyle: CSS.Properties = {
             width: '50px',
+            height: '50px',
             display: 'block',
             marginLeft: 'auto',
             borderRadius: '50%',
             marginRight: 'auto'
         };
+        const url = this.props.location.pathname;
+        const actives = [
+            !!matchPath(url, '/dashboard/:uid') ? 'active' : '',
+            !!matchPath(url, '/dashboard/:uid/accept') ? 'active' : '',
+            !!matchPath(url, '/dashboard/:uid/create') ? 'active' : '',
+            !!matchPath(url, '/dashboard/:uid/review') ? 'active' : '',
+        ];
+        const profileActive = actives.slice(1).every(x => x == '') && actives[0];
+        console.log(actives);
         // @ts-ignore: Object is possibly 'null'.
         const cuser = database.fireapp.auth().currentUser;
         if (cuser && cuser.uid == this.props.match.params.uid) {
@@ -70,18 +81,18 @@ class Dashboard extends React.Component<DashProps, DashState> {
             if (!this.state.error) {
                 return (
                     <div>
-                        <ul className="nav nav-pills nav-fill">
+                        <ul className="nav nav-tabs nav-fill">
                             <li className="nav-item">
-                                <Link className="nav-link" to={`/dashboard/${match.params.uid}`}>Profile</Link>
+                                <Link className={`nav-link ${profileActive}`} to={`/dashboard/${match.params.uid}`}>Profile</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`${match.url}/accept`}>Accept Contracts</Link>
+                                <Link className={`nav-link ${actives[1]}`} to={`${match.url}/accept`}>Accept Contracts</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`${match.url}/create`}>Create Contracts</Link>
+                                <Link className={`nav-link ${actives[2]}`} to={`${match.url}/create`}>Create Contracts</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to={`${match.url}/review`}>Active Contracts</Link>
+                                <Link className={`nav-link ${actives[3]}`} to={`${match.url}/review`}>Active Contracts</Link>
                             </li>
                         </ul>
                         <div className="jumbotron jumbotron-fluid">

@@ -59,11 +59,9 @@ export class ContractAccept extends React.Component<{}, AcceptState> {
                 <div className="card-columns">
                     {this.state.pendingContracts.map(c => (
                         <Contract data={c}>
-                            <div className="btn-group" role="role-group" aria-label="Users involved">
-                                <button className="btn btn-success btn-sm" key="accept"
-                                    onClick={e => this.handleSelection(0, c.uniqid)}>Accept</button>
-                                <button className="btn btn-danger btn-sm" key="reject" onClick={e => this.handleSelection(1, c.uniqid)}>Reject</button>
-                            </div>
+                            <button className="btn btn-success btn-sm" key="accept"
+                                onClick={e => this.handleSelection(0, c.uniqid)}>Accept</button>
+                            <button className="btn btn-danger btn-sm" key="reject" onClick={e => this.handleSelection(1, c.uniqid)}>Reject</button>
                         </Contract>
                     ))}
                 </div>

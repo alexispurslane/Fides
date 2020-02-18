@@ -3,6 +3,8 @@ import './App.css';
 import * as database from './DataOperations';
 import CSS from 'csstype';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBan } from '@fortawesome/free-solid-svg-icons'
 
 interface CCState {
     title: string,
@@ -90,9 +92,6 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 
     render() {
-        const inputStyle: CSS.Properties = {
-            float: 'right'
-        };
         const groupStyle: CSS.Properties = {
             display: 'block',
             height: '50px'
@@ -111,45 +110,70 @@ export class ContractCreator extends React.Component<{}, CCState> {
         }
 
         return (
-            <div style={{ margin: '10px auto', width: '80%' }}>
-                <h2 style={{ textAlign: 'center' }}>Create New Contract</h2>
+            <div>
+                <h2>Create New Contract</h2>
                 <form onSubmit={this.handleSubmit}>
-                    <label style={groupStyle}>
-                        Contract Title
-                        <input type="text" placeholder="Buy me lunch"
-                            style={inputStyle}
-                            value={this.state.title} onChange={e => this.handleChange(e, 'title')} />
-                    </label>
-                    <br />
-                    <label style={groupStyle}>
-                        Contract Description of Requirements
-                        <textarea placeholder="Please deilver 93lbs of Sushi to my location (999 Insane Square)."
-                            style={inputStyle}
-                            value={this.state.desc} onChange={e => this.handleChange(e, 'desc')} />
-                    </label>
-                    <br />
-                    <label style={groupStyle}>
-                        Contract Deadline
-                        <input type="date" value={this.state.deadline}
-                            style={inputStyle}
-                            min={formatDate(new Date())}
-                            onChange={e => this.handleChange(e, 'deadline')} />
-                    </label>
-                    <br />
-                    <label>
-                        <h3>Other Participant (Prospective) and Arbitrator (Optional)</h3>
-                        {this.state.people.map((p: database.Person) =>
-                            <Person key={p.uid} data={p}
-                                selected={this.state.userlist.indexOf(p.uid)}
-                                selection={this.onPersonSelection} />)}
-                    </label>
-                    <br />
-                    <input style={{ margin: '0 auto', display: 'block' }}
+                    <div className="form-group row">
+                        <label htmlFor="title" className="col-sm-2 col-form-label">Contract title</label>
+                        <div className="col-sm-10">
+                            <input className="form-control form-control-lg" type="text" placeholder="Contract title" id="title"
+                                aria-describedby="titleHelp"
+                                value={this.state.title}
+                                onChange={e => this.handleChange(e, 'title')} />
+                            <small id="titleHelp" className="form-text text-muted">
+                                This is a short few-word description of what the contract is about. Be descriptive!
+                </small>
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label htmlFor="desc" className="col-sm-2 col-form-label">Contract description</label>
+                        <div className="col-sm-10">
+                            <textarea className="form-control form-control-sm" placeholder="Please deilver 93lbs of Sushi to my location (999 Insane Square)."
+                                style={{ height: '100px' }} id="desc"
+                                aria-describedby="descHelp"
+                                value={this.state.desc} onChange={e => this.handleChange(e, 'desc')} />
+                            <small id="descHelp" className="form-text text-muted">
+                                This can be as long as you need it to be, and try to be specific about what you want to prevent miscommunication.
+            </small>
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label htmlFor="deadline" className="col-sm-2 col-form-label">Contract deadline</label>
+                        <div className="col-sm-10">
+                            <input type="date" value={this.state.deadline} id="deadline"
+                                className="form-control"
+                                aria-describedby="deadlineHelp"
+                                min={formatDate(new Date())}
+                                onChange={e => this.handleChange(e, 'deadline')} />
+                            <small id="deadlineHelp" className="form-text text-muted">
+                                This is when the contract should be fullfilled. You cannot review others in the contract before this date.
+            </small>
+                        </div>
+                    </div>
+                    <input className="btn btn-success"
                         type="submit" value="Submit" disabled={!(this.state.title != '' &&
                             this.state.userlist[0] != null &&
                             this.state.deadline != '')} />
                     {this.state.showBanner ?
-                        <p style={{ backgroundColor: 'green', color: 'white' }}>Submitted!</p> : null}
+                        <div className="alert alert-primary" role="alert">
+                            Contract successfully created and sent!
+                     </div> : null}
+                    <br />
+                    <br />
+                    <table className="table table-striped">
+                        <thead className="thead-dark">
+                            <tr>
+                                <th scope="col"> User </th>
+                                <th scope="col"> Role </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.state.people.map((p: database.Person) =>
+                                <Person key={p.uid} data={p}
+                                    selected={this.state.userlist.indexOf(p.uid)}
+                                    selection={this.onPersonSelection} />)}
+                        </tbody>
+                    </table>
                 </form>
             </div>
         );
@@ -166,28 +190,33 @@ function Person(props: {
         props.selection(ty, props.data.uid)
         console.log(ty);
     }
-    const style: CSS.Properties = {
-        backgroundColor: props.selected == 0 ? 'green' : props.selected == 1 ? 'red' : 'blue',
-        color: props.selected == 0 ? 'black' : props.selected == 1 ? 'white' : 'white',
+    const colorCode = props.selected == 0 ? 'primary' : props.selected == 1 ? 'secondary' : 'default';
+    const imageStyle: CSS.Properties = {
+        float: 'left',
+        width: '32px',
+        borderRadius: '50%',
         height: '32px',
-        padding: '5px 5px 5px 5px'
+        marginRight: '10px',
+        display: 'block'
     };
     return (
-        <div style={style}>
-            <span style={{ position: 'relative' }}>
-                <img style={{ float: 'left', width: '32px', height: '32px', paddingRight: '10px', display: 'block' }}
-                    src={props.data.metadata.photo} />
-                <Link style={{ width: '300px', position: 'absolute', top: '21px', color: 'white' }}
-                    to={`/dashboard/${props.data.uid}`}>{props.data.metadata.name}</Link>
-            </span>
-            <span style={{ float: 'right' }}>
-                <button disabled={props.selected == 0}
-                    key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
-                <button disabled={props.selected == 1}
-                    key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
-                <button disabled={props.selected == -1}
-                    key="deselect" onClick={e => callHandlerWrapped(e, -1)}>X</button>
-            </span>
-        </div>
+        <tr className={`table-${colorCode}`}>
+            <td>
+                <img style={imageStyle} src={props.data.metadata.photo} />
+                <Link to={`/dashboard/${props.data.uid}`}>{props.data.metadata.name}</Link>
+            </td>
+            <td>
+                <div className="btn-group">
+                    <button className="btn btn-sm btn-primary" disabled={props.selected == 0}
+                        key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
+                    <button className="btn btn-sm btn-secondary" disabled={props.selected == 1}
+                        key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
+                    <button className="btn btn-sm btn-danger" disabled={props.selected == -1}
+                        key="deselect" onClick={e => callHandlerWrapped(e, -1)}>
+                        <FontAwesomeIcon icon={faBan} />
+                    </button>
+                </div>
+            </td>
+        </tr>
     );
 }
