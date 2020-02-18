@@ -56,12 +56,17 @@ export class ContractAccept extends React.Component<{}, AcceptState> {
         return (
             <div>
                 <h2>Accept Contracts and Arbitration Requests</h2>
-                {this.state.pendingContracts.map(c => (
-                    <Contract data={c}>
-                        <button key="accept" onClick={e => this.handleSelection(0, c.uniqid)}>Accept</button>
-                        <button key="reject" onClick={e => this.handleSelection(1, c.uniqid)}>Reject</button>
-                    </Contract>
-                ))}
+                <div className="card-columns">
+                    {this.state.pendingContracts.map(c => (
+                        <Contract data={c}>
+                            <div className="btn-group" role="role-group" aria-label="Users involved">
+                                <button className="btn btn-success btn-sm" key="accept"
+                                    onClick={e => this.handleSelection(0, c.uniqid)}>Accept</button>
+                                <button className="btn btn-danger btn-sm" key="reject" onClick={e => this.handleSelection(1, c.uniqid)}>Reject</button>
+                            </div>
+                        </Contract>
+                    ))}
+                </div>
             </div>
         );
     }
