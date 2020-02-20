@@ -27,7 +27,7 @@ function HomePage() {
                 <hr className="my-4" />
                 <p>If you already have an account, or want one, just click the&nbsp;
             <kbd>Sign Up</kbd> button below, or the <kbd>Sign In</kbd> button
-                                                                                                                                                                                                                                                    above! Accounts are free and super fast to make, and we will not
+                                                                                                                                                                                                                                                                    above! Accounts are free and super fast to make, and we will not
             harass you with marketing emails.</p>
                 <div className="lead">
                     <div className="btn-group">
@@ -59,6 +59,8 @@ function HomePage() {
                                                 interaction that you have mutually agreed to with
                                                     someone else, and promised to complete. As part of attempting to be a more general framework for trust, we also offer arbitrated "contracts" allowing a third part to judge both other parties.</p>
                 </div>
+            </div>
+            <div className="row">
                 <div className="col-md">
                     <h1 style={{ textAlign: 'center' }}><FontAwesomeIcon icon={faBolt} /></h1>
                     <h2 style={{ textAlign: 'center' }}>Lightening-Fast Performance</h2>
@@ -76,10 +78,10 @@ function HomePage() {
                     <p>We do not have one central authority choosing who gets to
                     be marked as trustworthy and who does not &mdash; instead,
                     all of your peers will rate you using an easy to use and
-        proportionate rating system based on how well <em>they</em>&nbsp;
-                                                                                                                                                                                                                        were satisfied with their "contract" with you. Make your
-                                                                                                                                                                                                                        peers happy, and more people will be willing to trust you,
-                    because your score will be higher!</p>
+                    proportionate rating system based on how well
+                    <em>they</em>&nbsp; were satisfied with their "contract"
+                        with you. Make your peers happy, and more people will be
+                    willing to trust you, because your score will be higher!</p>
                 </div>
             </div>
         </div>
