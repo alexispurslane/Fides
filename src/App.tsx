@@ -27,7 +27,7 @@ function HomePage() {
                 <hr className="my-4" />
                 <p>If you already have an account, or want one, just click the&nbsp;
             <kbd>Sign Up</kbd> button below, or the <kbd>Sign In</kbd> button
-                                                                                                                                            above! Accounts are free and super fast to make, and we will not
+                                                                                                                                                                                                                                                    above! Accounts are free and super fast to make, and we will not
             harass you with marketing emails.</p>
                 <div className="lead">
                     <div className="btn-group">
@@ -53,20 +53,18 @@ function HomePage() {
                     <h1 style={{ textAlign: 'center' }}><FontAwesomeIcon icon={faGlobeAmericas} /></h1>
                     <h2 style={{ textAlign: 'center' }}>Global Ratings For Everyone</h2>
                     <p>Fides takes a holistic approach to your, and other people's, trust-scores:
-                                                the score isn't limited to one particular service or
+        the score isn&#39;t limited to one particular service or
                                                 job, like a credit score, Ebay score, or Yelp score
                                                 &mdash; instead, it is intelligently based on any
                                                 interaction that you have mutually agreed to with
-                                                someone else, and promised to complete. We take a
-                                                holistic approach to determining if you're
-                                                trustworthy!</p>
+                                                    someone else, and promised to complete. As part of attempting to be a more general framework for trust, we also offer arbitrated "contracts" allowing a third part to judge both other parties.</p>
                 </div>
                 <div className="col-md">
                     <h1 style={{ textAlign: 'center' }}><FontAwesomeIcon icon={faBolt} /></h1>
                     <h2 style={{ textAlign: 'center' }}>Lightening-Fast Performance</h2>
                     <p>Everything on Fides is updated as soon as new information hits our servers, meaning
                     that all the information you are looking at is garunteed to be
-                    as up-to-date as possible all times. No set refresh times,
+                    as up-to-date as possible at all times. No set refresh times,
                     and no need to hit that refresh button yourself! Meanwhile,
                     our entire system is structured
                     for maximum reliable performance, so when you need it, Fides is
@@ -75,12 +73,12 @@ function HomePage() {
                 <div className="col-md">
                     <h1 style={{ textAlign: 'center' }}><FontAwesomeIcon icon={faHandshake} /></h1>
                     <h2 style={{ textAlign: 'center' }}>Distributed Rating</h2>
-                    <p>We don't have one central authority choosing who gets to
+                    <p>We do not have one central authority choosing who gets to
                     be marked as trustworthy and who does not &mdash; instead,
                     all of your peers will rate you using an easy to use and
-                    proportionate rating system based on how well <em>they</em>
-                        were satisfied with their "contract" with you. Make your
-                        peers happy, and more people will be willing to trust you,
+        proportionate rating system based on how well <em>they</em>&nbsp;
+                                                                                                                                                                                                                        were satisfied with their "contract" with you. Make your
+                                                                                                                                                                                                                        peers happy, and more people will be willing to trust you,
                     because your score will be higher!</p>
                 </div>
             </div>
@@ -101,7 +99,7 @@ class NavbarRaw extends React.Component<NavProps, State> {
     constructor(props: NavProps) {
         super(props);
         this.state = {
-            uid: "",
+            uid: "!!unknown!!",
             signedIn: false,
         };
     }
@@ -140,10 +138,9 @@ class NavbarRaw extends React.Component<NavProps, State> {
                 </li>
             </ul>,
             <div key="2" className="form-inline ml-auto">
-                <button className="btn btn-sm btn-outline-secondary" onClick={e => {
+                <button className="btn btn-sm btn-outline-warning" onClick={e => {
                     e.preventDefault();
                     $('#myModal').modal('show');
-                    console.log($('#myModal'));
                 }} type="button">Sign Out</button>
             </div>
         ];
@@ -152,13 +149,15 @@ class NavbarRaw extends React.Component<NavProps, State> {
                 {universals}
             </ul>,
             <div key="2" className="form-inline ml-auto">
-                <Link className="btn btn-sm btn-outline-secondary" to="/signin">Sign In</Link>
+                <Link className="btn btn-sm btn-outline-warning" to="/signin">Sign In</Link>
             </div>
         ]
         return (
-            this.state.signedIn ?
-                signedIn :
-                signedOut
+            this.state.uid === "!!unknown!!" ?
+                (<div className="spinner-border ml-auto text-secondary" role="status" aria-hidden="true"></div>) : (
+                    this.state.signedIn ?
+                        signedIn :
+                        signedOut)
         );
     }
 }
