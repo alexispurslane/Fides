@@ -34,7 +34,7 @@ function adjustRatingWeight(rating: number, x: number): number {
     const adjustment = 30
         * (1 / (d * Math.sqrt(2 * Math.PI)))
         * Math.pow(Math.E, (-0.5) * Math.pow((x - u) / d, 2));
-    return Math.max(0.2, rating * adjustment);
+    return rating * Math.max(0.001, adjustment);
 }
 
 export function updateScore(ref: firebase.database.Reference) {
@@ -45,17 +45,18 @@ export function updateScore(ref: firebase.database.Reference) {
         if (Object.keys(ratings).length > 0) {
             // count the number of times each user has interacted with this one
             let raters: { [uid: string]: number } = {};
-            Object.entries(person.ratings).forEach(([uniqid, rating]) => {
+            ratings.forEach(rating => {
                 raters[rating.uid] = (raters[rating.uid] || 0) + 1;
             });
             // sum up all the ratings from each user, adjusted for the amount of
             // experience that user has with this one
             let total = ratings.reduce((acc, x) => acc + adjustRatingWeight(x.rating, raters[x.uid]), 0);
             // Take the weighted average of the other users' ratings
-            let newscore = total / ratings.length;
+            let newscore = Math.max(0.001, total / ratings.length);
             // make it not have ugly decimals
             let places = Math.trunc(Math.abs(Math.ceil(Math.log10(newscore)))) + 1;
-            ref.child('score').set(Math.round(newscore * Math.pow(10, places)) / Math.pow(10, places));
+            let adjusted = Math.round(newscore * Math.pow(10, places)) / Math.pow(10, places);
+            ref.child('score').set(adjusted);
         }
     });
 }
@@ -190,7 +191,6 @@ export function review(contract: Contract, uid: string, target: string, rating: 
     }
 
     let targetPerson = fireapp.database().ref('/people/' + contract.people[target].uid);
-    rating = rating < 0 ? 1.0 / 10 ^ (Math.abs(rating) / 2) : rating;
     targetPerson.child('ratings/' + contract.uniqid).set({
         uid: uid,
         rating: contract.people[uid].initialScore * rating

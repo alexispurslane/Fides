@@ -1,7 +1,28 @@
-import React, { FormEvent } from 'react';
+import React from 'react';
 import './App.css';
 import * as database from './DataOperations';
 import CSS from 'csstype';
+import unknownUser from './unknownUser.svg';
+
+export function UserAvatar(props: { avatar: (string | undefined), size?: string, style?: CSS.Properties }) {
+    const photoStyle: CSS.Properties = props.style || {
+        width: props.size || '32px',
+        height: props.size || '32px',
+        display: 'block',
+        marginLeft: 'auto',
+        borderRadius: '50%',
+        marginRight: 'auto'
+    };
+    return (
+        props.avatar && (
+            <img src={props.avatar || unknownUser}
+                onError={e => {
+                    // @ts-ignore: Property 'onError' does not exist on type 'EventTarget'.
+                    e.target.onError = null; e.target.src = unknownUser
+                }}
+                style={photoStyle} />) || null
+    );
+}
 
 interface UIProps {
     user: string,
@@ -103,7 +124,7 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                         </div>
                     </div>
                     <br />
-                    <input className="btn btn-primary" type="submit" value="Submit" />
+                    <input className="btn btn-primary" type="submit" value="Update Info" />
                     <br />
                     {this.state.showBanner ?
                         <div className="alert alert-success" role="alert"><b>Succes</b> Info successfully updated! </div> : null}
@@ -134,15 +155,20 @@ export class UserInformation extends React.Component<UIProps, UIState> {
             )
         }
         return (
-            <div style={{ margin: '10px auto', width: '80%' }}>
-                <div className="card mx-auto" style={{ width: '18rem' }}>
-                    <div className="card-body" style={{ textAlign: 'center' }}>
-                        <h5 className="card-title" style={{ fontVariant: 'small-caps' }}>SCORE</h5>
-                        <h1><span className={`badge badge-${scoreColor}`}>{this.state.info?.score}</span></h1>
+            <div>
+                {this.state.info ? (<div>
+                    <div className="card mx-auto" style={{ width: '18rem' }}>
+                        <div className="card-body" style={{ textAlign: 'center' }}>
+                            <h5 className="card-title" style={{ fontVariant: 'small-caps' }}>SCORE</h5>
+                            <h1><span className={`badge badge-${scoreColor}`}>{this.state.info?.score}</span></h1>
+                        </div>
                     </div>
-                </div>
-                <br />
-                {internals}
+                    <br />
+                    {internals}
+                </div>) : (<div className="d-flex align-items-center">
+                    <strong>Loading...</strong>
+                    <div className="spinner-border ml-auto text-success" role="status" aria-hidden="true"></div>
+                </div>)}
             </div>
         );
     }

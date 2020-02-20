@@ -5,6 +5,7 @@ import CSS from 'csstype';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBan } from '@fortawesome/free-solid-svg-icons'
+import { UserAvatar } from './UserInformation';
 
 interface CCState {
     title: string,
@@ -202,7 +203,7 @@ function Person(props: {
     return (
         <tr className={`table-${colorCode}`}>
             <td>
-                <img style={imageStyle} src={props.data.metadata.photo} />
+                <UserAvatar style={imageStyle} avatar={props.data.metadata.photo} />
                 <Link to={`/dashboard/${props.data.uid}`}>{props.data.metadata.name}</Link>
             </td>
             <td>

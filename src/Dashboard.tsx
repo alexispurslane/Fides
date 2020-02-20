@@ -13,7 +13,7 @@ import { Contract } from './Contract';
 import { ContractCreator } from './ContractCreator';
 import { ContractAccept } from './ContractAccept';
 import { Rate } from './Rate';
-import { UserInformation } from './UserInformation';
+import { UserInformation, UserAvatar } from './UserInformation';
 
 interface MatchParams {
     uid: string;
@@ -57,14 +57,6 @@ class Dashboard extends React.Component<DashProps, DashState> {
     }
 
     render() {
-        const photoStyle: CSS.Properties = {
-            width: '50px',
-            height: '50px',
-            display: 'block',
-            marginLeft: 'auto',
-            borderRadius: '50%',
-            marginRight: 'auto'
-        };
         const url = this.props.location.pathname;
         const actives = [
             !!matchPath(url, '/dashboard/:uid') ? 'active' : '',
@@ -73,7 +65,6 @@ class Dashboard extends React.Component<DashProps, DashState> {
             !!matchPath(url, '/dashboard/:uid/review') ? 'active' : '',
         ];
         const profileActive = actives.slice(1).every(x => x == '') && actives[0];
-        console.log(actives);
         // @ts-ignore: Object is possibly 'null'.
         const cuser = database.fireapp.auth().currentUser;
         if (cuser && cuser.uid == this.props.match.params.uid) {
@@ -97,7 +88,7 @@ class Dashboard extends React.Component<DashProps, DashState> {
                         </ul>
                         <div className="jumbotron jumbotron-fluid">
                             <div className="container" style={{ textAlign: 'center' }}>
-                                <img src={this.state.info?.photo} style={photoStyle} />
+                                <UserAvatar avatar={this.state.info?.photo} size="50px" />
                                 <h1 className="display-4">
 
                                     {this.state.info?.name || "unknown"}
@@ -130,9 +121,9 @@ class Dashboard extends React.Component<DashProps, DashState> {
                 <div>
                     <div className="jumbotron jumbotron-fluid">
                         <div className="container" style={{ textAlign: 'center' }}>
-                            <img src={this.state.info?.photo} style={photoStyle} />
+                            <UserAvatar avatar={this.state.info?.photo} size="50px" />
                             <h1 className="display-4">
-                                {this.state.info?.name || "unknown"}
+                                {this.state.info?.name || ""}
                             </h1>
                             <p className="lead">{this.state.info?.bio}</p>
                         </div>
