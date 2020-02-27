@@ -49,7 +49,7 @@ export class Contract extends React.Component<ContractProps, { users: database.P
                 <ul className="list-group list-group-flush">
                     {Object.values(this.state.users).map(u => {
                         let udata = this.props.data.people[u.uid];
-                        return <li className="list-group-item">
+                        return <li key={u.uid} className="list-group-item">
                             <b>{capitalize(this.props.data.people[u.uid].role)}:&nbsp;</b>
                             <Link style={{ color: udata.accepted ? 'green' : 'red' }} to={`/dashboard/${u.uid}`}>{u.metadata.name}</Link>
                         </li>;

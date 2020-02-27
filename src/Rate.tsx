@@ -6,6 +6,8 @@ import {
     Link,
 } from 'react-router-dom';
 import { Contract } from './Contract';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faStar } from '@fortawesome/free-solid-svg-icons'
 
 interface RateState {
     contracts: { [uniqid: string]: database.Contract },
@@ -101,16 +103,27 @@ export class Rate extends React.Component<{}, RateState> {
                                 <div className="modal-body">
                                     <p>Please be careful and thoughtful&mdash;this does effect how they look to other people! Also, please choose a number between ten and negative ten.</p>
                                 </div>
-                                <form className="modal-footer">
-                                    <input type="number" className="form-control"
-                                        max="10"
-                                        min="-10"
-                                        value={this.state.rating}
-                                        onChange={e => this.setState({ rating: e.target.value })} />
+                                <div className="modal-footer">
+                                    <div>
+                                        <h6><span className="badge badge-secondary">{this.state.rating}</span></h6>
+                                        {[...Array(21).keys()].map((_, i) => {
+                                            return (
+                                                <button id={i.toString()} key={i}
+                                                    onClick={_ => this.setState({ rating: (i - 10).toString() })}
+                                                    style={{ border: 'none', background: 'none' }}>
+                                                    <FontAwesomeIcon
+                                                        icon={faStar}
+                                                        color={+this.state.rating >= i - 10 ?
+                                                            'gold' : 'black'} />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <hr />
                                     <input type="submit" className="btn btn-success" data-dismiss="modal"
                                         onClick={this.state.callback.bind(this)} value="Rate" />
                                     <button className="btn btn-warning" data-dismiss="modal">Nevermind</button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>

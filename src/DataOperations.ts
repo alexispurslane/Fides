@@ -31,7 +31,7 @@ export interface Person {
 function adjustRatingWeight(rating: number, x: number): number {
     const d = 6.5;
     const u = 10;
-    const adjustment = 30
+    const adjustment = 60
         * (1 / (d * Math.sqrt(2 * Math.PI)))
         * Math.pow(Math.E, (-0.5) * Math.pow((x - u) / d, 2));
     return rating * Math.max(0.001, adjustment);
@@ -43,14 +43,9 @@ export function updateScore(ref: firebase.database.Reference) {
         // Take only the entries that actually have a rating, i.e. from finished contracts
         let ratings = Object.values(person.ratings).filter((x: Rating) => !!x.rating);
         if (Object.keys(ratings).length > 0) {
-            // count the number of times each user has interacted with this one
-            let raters: { [uid: string]: number } = {};
-            ratings.forEach(rating => {
-                raters[rating.uid] = (raters[rating.uid] || 0) + 1;
-            });
             // sum up all the ratings from each user, adjusted for the amount of
             // experience that user has with this one
-            let total = ratings.reduce((acc, x) => acc + adjustRatingWeight(x.rating, raters[x.uid]), 0);
+            let total = ratings.reduce((acc, x) => acc + x.rating, 0);
             // Take the weighted average of the other users' ratings
             let newscore = Math.max(0.001, total / ratings.length);
             // make it not have ugly decimals
@@ -174,7 +169,6 @@ export function review(contract: Contract, uid: string, target: string, rating: 
         throw new Error("Only the arbitrator can review in this contract.");
     }
     if (!Object.keys(contract.people).includes(uid)) {
-        console.log(uid, Object.keys(contract.people))
         throw new Error("Your are not in this contract.");
     }
     if (!Object.keys(contract.people).includes(target)) {
@@ -190,12 +184,25 @@ export function review(contract: Contract, uid: string, target: string, rating: 
         throw new Error("This person has not accepted the invitation yet!");
     }
 
-    let targetPerson = fireapp.database().ref('/people/' + contract.people[target].uid);
-    targetPerson.child('ratings/' + contract.uniqid).set({
-        uid: uid,
-        rating: contract.people[uid].initialScore * rating
-    })
-    updateScore(targetPerson);
+    let tpRef = fireapp.database().ref('/people/' + target);
+    tpRef.once('value', tpSnap => {
+        let targetPerson = tpSnap.val();
+        let ratings = Object.values(targetPerson.ratings).filter((x: any) => !!x.rating);
+        let experience = 1;
+        if (Object.keys(ratings).length > 0) {
+            // count the number of times each user has interacted with this one
+            let raters: { [uid: string]: number } = {};
+            ratings.forEach((rating: any) => {
+                raters[rating.uid] = (raters[rating.uid] || 0) + 1;
+            });
+            experience = raters[uid];
+        }
+        tpRef.child('ratings/' + contract.uniqid).set({
+            uid: uid,
+            rating: adjustRatingWeight(contract.people[uid].initialScore * rating, experience)
+        })
+        updateScore(tpRef);
+    });
 }
 
 export function newPerson(person: Person) {

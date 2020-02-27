@@ -11,7 +11,7 @@ body:after{
     position: fixed;
     width: 80px;
     height: 25px;
-    background: #EE8E4A;
+    background: #ffc107;
     top: 7px;
     left: -20px;
     text-align: center;
@@ -29,4 +29,8 @@ footer {
     width: 100%;
     height: 120px;
     overflow: hidden;
+}
+
+kbd {
+    background-color: #007bff;
 }

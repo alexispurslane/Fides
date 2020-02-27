@@ -4,7 +4,7 @@ import * as database from './DataOperations';
 import CSS from 'csstype';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBan } from '@fortawesome/free-solid-svg-icons'
+import { faBan, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { UserAvatar } from './UserInformation';
 
 interface CCState {
@@ -14,6 +14,7 @@ interface CCState {
     userlist: [string | null, string | null],
     people: database.Person[],
     showBanner: boolean,
+    personListShowNumber: number,
 }
 
 export class ContractCreator extends React.Component<{}, CCState> {
@@ -27,22 +28,65 @@ export class ContractCreator extends React.Component<{}, CCState> {
             userlist: [null, null],
             people: [],
             showBanner: false,
+            personListShowNumber: 3,
         };
     }
 
     componentDidMount() {
-        database.fireapp.database().ref('/people').on('value', snapshot => {
-            let people: database.Person[] = [];
-            snapshot.forEach(item => {
-                let v = item.val();
-                let auth = database.fireapp;
-                // @ts-ignore: Object is possibly 'null'.
-                if (v.uid != auth.auth().currentUser.uid) {
-                    people.push(v);
+        database.fireapp.database().ref('/people').orderByChild("metadata/name")
+            .limitToFirst(this.state.personListShowNumber)
+            .on('value', snapshot => {
+                let people: database.Person[] = [];
+                snapshot.forEach(item => {
+                    let v = item.val();
+                    let auth = database.fireapp;
+                    // @ts-ignore: Object is possibly 'null'.
+                    if (v.uid != auth.auth().currentUser.uid) {
+                        people.push(v);
+                    }
+                })
+                this.setState({ people: people });
+            });
+    }
+
+    nextPage = (e: any) => {
+        let lastPerson = this.state.people[this.state.people.length - 1].metadata.name;
+        database.fireapp.database().ref('/people').orderByChild("metadata/name")
+            .startAt(lastPerson)
+            .limitToFirst(this.state.personListShowNumber)
+            .on('value', snapshot => {
+                let people: database.Person[] = [];
+                snapshot.forEach(item => {
+                    let v = item.val();
+                    let auth = database.fireapp;
+                    // @ts-ignore: Object is possibly 'null'.
+                    if (v.uid != auth.auth().currentUser.uid) {
+                        people.push(v);
+                    }
+                })
+                if (people.length > 1) {
+                    this.setState({ people: people.slice(1) });
                 }
-            })
-            this.setState({ people: people });
-        });
+            });
+    }
+
+    prevPage = (e: any) => {
+        let firstPerson = this.state.people[0].metadata.name;
+        database.fireapp.database().ref('/people').orderByChild("metadata/name")
+            .endAt(firstPerson)
+            .limitToLast(this.state.personListShowNumber)
+            .on('value', snapshot => {
+                let people: database.Person[] = [];
+                snapshot.forEach(item => {
+                    let v = item.val();
+                    let auth = database.fireapp;
+                    // @ts-ignore: Object is possibly 'null'.
+                    if (v.uid != auth.auth().currentUser.uid) {
+                        people.push(v);
+                    }
+                })
+                this.setState({ people: people });
+            });
     }
 
     handleChange(event: any, data: string) {
@@ -77,6 +121,12 @@ export class ContractCreator extends React.Component<{}, CCState> {
                 this.setState({ showBanner: false });
             }, 3500);
         }
+    }
+
+    changeNumber = (e: any) => {
+        this.setState({
+            personListShowNumber: +e.target.value
+        });
     }
 
     onPersonSelection = (ty: number, uid: string) => {
@@ -161,6 +211,38 @@ export class ContractCreator extends React.Component<{}, CCState> {
                      </div> : null}
                     <br />
                     <br />
+                    <form className="form" style={{ float: 'right', paddingRight: '15px' }}>
+                        <div className="row">
+                            <div className="form-group col-xs-6 m-1">
+                                <nav aria-label="Page navigation example">
+                                    <ul className="pagination">
+                                        <li className="page-item"><a className="page-link" onClick={this.prevPage}>
+                                            <FontAwesomeIcon icon={faChevronLeft} />
+                                        </a></li>
+                                        <li className="page-item"><a className="page-link" onClick={this.nextPage}>
+                                            <FontAwesomeIcon icon={faChevronRight} />
+                                        </a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                            <div className="form-group col-xs-6 m-1">
+                                <div className="dropdown">
+                                    <button className="btn btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        id="dropdownMenuButton"
+                                        data-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                        Show #</button>
+                                    <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a className="dropdown-item" onClick={this.changeNumber}>5</a>
+                                        <a className="dropdown-item" onClick={this.changeNumber}>10</a>
+                                        <a className="dropdown-item" onClick={this.changeNumber}>15</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                     <table className="table table-striped">
                         <thead className="thead-dark">
                             <tr>
@@ -176,7 +258,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                         </tbody>
                     </table>
                 </form>
-            </div>
+            </div >
         );
     }
 }
