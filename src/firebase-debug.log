@@ -1,0 +1,17 @@
+[debug] [2020-02-23T23:19:20.695Z] ----------------------------------------------------------------------
+[debug] [2020-02-23T23:19:20.699Z] Command:       /usr/bin/node /home/christopherdumas/Documents/fides/node_modules/.bin/firebase deploy
+[debug] [2020-02-23T23:19:20.700Z] CLI Version:   7.13.0
+[debug] [2020-02-23T23:19:20.700Z] Platform:      linux
+[debug] [2020-02-23T23:19:20.700Z] Node Version:  v13.7.0
+[debug] [2020-02-23T23:19:20.701Z] Time:          Sun Feb 23 2020 18:19:20 GMT-0500 (Eastern Standard Time)
+[debug] [2020-02-23T23:19:20.702Z] ----------------------------------------------------------------------
+[debug] [2020-02-23T23:19:20.702Z] 
+[debug] [2020-02-23T23:19:20.716Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-02-23T23:19:20.716Z] > authorizing via signed-in user
+[debug] [2020-02-23T23:19:20.716Z] [iam] checking project fides-652bb for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasedatabase.instances.update","firebasehosting.sites.update"]
+[debug] [2020-02-23T23:19:20.718Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-02-23T23:19:20.719Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-02-23T23:19:20.921Z] <<< HTTP RESPONSE 200
+[debug] [2020-02-23T23:19:20.931Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/fides-652bb:testIamPermissions  
+

@@ -185,6 +185,7 @@ export function review(contract: Contract, uid: string, target: string, rating: 
     }
 
     let tpRef = fireapp.database().ref('/people/' + target);
+    let alreadyExists = false;
     tpRef.once('value', tpSnap => {
         let targetPerson = tpSnap.val();
         let ratings = Object.values(targetPerson.ratings).filter((x: any) => !!x.rating);
@@ -197,12 +198,19 @@ export function review(contract: Contract, uid: string, target: string, rating: 
             });
             experience = raters[uid];
         }
-        tpRef.child('ratings/' + contract.uniqid).set({
-            uid: uid,
-            rating: adjustRatingWeight(contract.people[uid].initialScore * rating, experience)
-        })
-        updateScore(tpRef);
+        if (!tpSnap.hasChild('ratings/' + contract.uniqid)) {
+            tpRef.child('ratings/' + contract.uniqid).set({
+                uid: uid,
+                rating: adjustRatingWeight(contract.people[uid].initialScore * rating, experience)
+            });
+            updateScore(tpRef);
+        } else {
+            alreadyExists = true;
+        }
     });
+    if (alreadyExists) {
+        throw new Error("You have already rated this person for this contract!");
+    }
 }
 
 export function newPerson(person: Person) {
