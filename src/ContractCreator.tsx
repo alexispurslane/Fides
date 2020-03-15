@@ -15,6 +15,7 @@ interface CCState {
     people: database.Person[],
     showBanner: boolean,
     personListShowNumber: number,
+    personListOffset: number,
 }
 
 export class ContractCreator extends React.Component<{}, CCState> {
@@ -28,20 +29,20 @@ export class ContractCreator extends React.Component<{}, CCState> {
             userlist: [null, null],
             people: [],
             showBanner: false,
-            personListShowNumber: 3,
+            personListShowNumber: 2,
+            personListOffset: 0,
         };
     }
 
     componentDidMount() {
         database.fireapp.database().ref('/people').orderByChild("metadata/name")
-            .limitToFirst(this.state.personListShowNumber)
             .on('value', snapshot => {
                 let people: database.Person[] = [];
                 snapshot.forEach(item => {
                     let v = item.val();
-                    let auth = database.fireapp;
+                    let auth = database.fireapp.auth();
                     // @ts-ignore: Object is possibly 'null'.
-                    if (v.uid != auth.auth().currentUser.uid) {
+                    if (v.uid != auth.currentUser.uid) {
                         people.push(v);
                     }
                 })
@@ -50,43 +51,23 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 
     nextPage = (e: any) => {
-        let lastPerson = this.state.people[this.state.people.length - 1].metadata.name;
-        database.fireapp.database().ref('/people').orderByChild("metadata/name")
-            .startAt(lastPerson)
-            .limitToFirst(this.state.personListShowNumber)
-            .on('value', snapshot => {
-                let people: database.Person[] = [];
-                snapshot.forEach(item => {
-                    let v = item.val();
-                    let auth = database.fireapp;
-                    // @ts-ignore: Object is possibly 'null'.
-                    if (v.uid != auth.auth().currentUser.uid) {
-                        people.push(v);
-                    }
-                })
-                if (people.length > 1) {
-                    this.setState({ people: people.slice(1) });
-                }
-            });
+        this.setState(state => {
+            return { personListOffset: state.personListOffset + 1 }
+        })
     }
 
     prevPage = (e: any) => {
-        let firstPerson = this.state.people[0].metadata.name;
-        database.fireapp.database().ref('/people').orderByChild("metadata/name")
-            .endAt(firstPerson)
-            .limitToLast(this.state.personListShowNumber)
-            .on('value', snapshot => {
-                let people: database.Person[] = [];
-                snapshot.forEach(item => {
-                    let v = item.val();
-                    let auth = database.fireapp;
-                    // @ts-ignore: Object is possibly 'null'.
-                    if (v.uid != auth.auth().currentUser.uid) {
-                        people.push(v);
-                    }
-                })
-                this.setState({ people: people });
-            });
+        this.setState(state => {
+            return { personListOffset: state.personListOffset - 1 }
+        })
+    }
+
+    get peopleList(): database.Person[] {
+        let start =
+            this.state.personListOffset * this.state.personListShowNumber;
+        let end = start + this.state.personListShowNumber;
+        console.log(this.state.personListOffset, this.state.personListShowNumber);
+        return this.state.people.slice(start, end);
     }
 
     handleChange(event: any, data: string) {
@@ -123,10 +104,13 @@ export class ContractCreator extends React.Component<{}, CCState> {
         }
     }
 
-    changeNumber = (e: any) => {
-        this.setState({
-            personListShowNumber: +e.target.value
-        });
+    changeNumber(i: number) {
+        return (_: any) => {
+            this.setState({
+                personListShowNumber: i,
+                personListOffset: 0
+            });
+        }
     }
 
     onPersonSelection = (ty: number, uid: string) => {
@@ -211,7 +195,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                      </div> : null}
                     <br />
                     <br />
-                    <form className="form" style={{ float: 'right', paddingRight: '15px' }}>
+                    <div className="form" style={{ float: 'right', paddingRight: '15px' }}>
                         <div className="row">
                             <div className="form-group col-xs-6 m-1">
                                 <nav aria-label="Page navigation example">
@@ -235,14 +219,15 @@ export class ContractCreator extends React.Component<{}, CCState> {
                                         aria-expanded="false">
                                         Show #</button>
                                     <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a className="dropdown-item" onClick={this.changeNumber}>5</a>
-                                        <a className="dropdown-item" onClick={this.changeNumber}>10</a>
-                                        <a className="dropdown-item" onClick={this.changeNumber}>15</a>
+                                        {[2, 5, 10, 15].map(i => {
+                                            return (<a className="dropdown-item"
+                                                onClick={this.changeNumber(i)} key={i}>{i}</a>);
+                                        })}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                     <table className="table table-striped">
                         <thead className="thead-dark">
                             <tr>
@@ -251,7 +236,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                             </tr>
                         </thead>
                         <tbody>
-                            {this.state.people.map((p: database.Person) =>
+                            {this.peopleList.map((p: database.Person) =>
                                 <Person key={p.uid} data={p}
                                     selected={this.state.userlist.indexOf(p.uid)}
                                     selection={this.onPersonSelection} />)}
