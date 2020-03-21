@@ -14,13 +14,13 @@ export function UserAvatar(props: { avatar: (string | undefined), size?: string,
         marginRight: 'auto'
     };
     return (
-        props.avatar && (
-            <img src={props.avatar || unknownUser}
+        props.avatar ? (
+            <img src={props.avatar || unknownUser} alt="Avatar"
                 onError={e => {
                     // @ts-ignore: Property 'onError' does not exist on type 'EventTarget'.
                     e.target.onError = null; e.target.src = unknownUser
                 }}
-                style={photoStyle} />) || null
+                style={photoStyle} />) : null
     );
 }
 
@@ -75,13 +75,6 @@ export class UserInformation extends React.Component<UIProps, UIState> {
     }
 
     render() {
-        const inputStyle: CSS.Properties = {
-            float: 'right'
-        };
-        const groupStyle: CSS.Properties = {
-            display: 'block',
-            height: '50px'
-        };
         const score = this.state.info?.score || 0.00;
         const scoreColor = score > 2 ? 'success' : score < 0.5 ? 'danger' : 'warning';
         let internals = (

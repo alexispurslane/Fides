@@ -159,7 +159,7 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
                     initialScore: snapshot.val().score,
                     uid: uid,
                     role: role,
-                    accepted: role == Role.Initiator,
+                    accepted: role === Role.Initiator,
                 };
                 let updates: { [path: string]: any } = {};
                 updates['roles/' + role] = pr;
@@ -207,7 +207,7 @@ export function review(contract: Contract, uid: string, target: string, rating: 
     }
 
     let tpRef = fireapp.database().ref('/people/' + target);
-    let alreadyExists = false;
+    //let alreadyExists = false;
     tpRef.once('value', tpSnap => {
         let targetPerson = tpSnap.val();
         let ratings = Object.values(targetPerson.ratings).filter((x: any) => !!x.rating);

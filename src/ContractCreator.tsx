@@ -42,7 +42,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                     let v = item.val();
                     let auth = database.fireapp.auth();
                     // @ts-ignore: Object is possibly 'null'.
-                    if (v.uid != auth.currentUser.uid) {
+                    if (v.uid !== auth.currentUser.uid) {
                         people.push(v);
                     }
                 })
@@ -119,7 +119,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
         if (index > -1) {
             nl.splice(index, 1);
         }
-        if (ty != -1) {
+        if (ty !== -1) {
             nl[ty] = uid;
         }
         this.setState({ userlist: nl });
@@ -127,11 +127,6 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 
     render() {
-        const groupStyle: CSS.Properties = {
-            display: 'block',
-            height: '50px'
-        };
-
         function formatDate(d: Date) {
             let month = '' + (d.getMonth() + 1),
                 day = '' + d.getDate(),
@@ -186,9 +181,9 @@ export class ContractCreator extends React.Component<{}, CCState> {
                         </div>
                     </div>
                     <input className="btn btn-success"
-                        type="submit" value="Submit" disabled={!(this.state.title != '' &&
-                            this.state.userlist[0] != null &&
-                            this.state.deadline != '')} />
+                        type="submit" value="Submit" disabled={!(this.state.title !== '' &&
+                            this.state.userlist[0] !== null &&
+                            this.state.deadline !== '')} />
                     {this.state.showBanner ?
                         <div className="alert alert-primary" role="alert">
                             <b>Success</b> Contract successfully created and sent!
@@ -258,7 +253,7 @@ function Person(props: {
         props.selection(ty, props.data.uid)
         console.log(ty);
     }
-    const colorCode = props.selected == 0 ? 'primary' : props.selected == 1 ? 'secondary' : 'default';
+    const colorCode = props.selected === 0 ? 'primary' : props.selected === 1 ? 'secondary' : 'default';
     const imageStyle: CSS.Properties = {
         float: 'left',
         width: '32px',
@@ -275,11 +270,11 @@ function Person(props: {
             </td>
             <td>
                 <div className="btn-group">
-                    <button className="btn btn-sm btn-primary" disabled={props.selected == 0}
+                    <button className="btn btn-sm btn-primary" disabled={props.selected === 0}
                         key="other" onClick={e => callHandlerWrapped(e, 0)}>Other</button>
-                    <button className="btn btn-sm btn-secondary" disabled={props.selected == 1}
+                    <button className="btn btn-sm btn-secondary" disabled={props.selected === 1}
                         key="arbitrator" onClick={e => callHandlerWrapped(e, 1)}>Arbitrator</button>
-                    <button className="btn btn-sm btn-danger" disabled={props.selected == -1}
+                    <button className="btn btn-sm btn-danger" disabled={props.selected === -1}
                         key="deselect" onClick={e => callHandlerWrapped(e, -1)}>
                         <FontAwesomeIcon icon={faBan} />
                     </button>

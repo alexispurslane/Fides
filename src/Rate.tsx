@@ -1,10 +1,6 @@
 import React from 'react';
 import * as database from './DataOperations';
-import CSS from 'csstype';
 import $ from 'jquery';
-import {
-    Link,
-} from 'react-router-dom';
 import { Contract } from './Contract';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faStar } from '@fortawesome/free-solid-svg-icons'
@@ -39,7 +35,7 @@ export class Rate extends React.Component<{}, RateState> {
             if (user) {
                 this.setState({ currentUid: user.uid });
                 database.fireapp.database().ref('/people/' + user.uid + '/ratings').on('value', ratingsSnap => {
-                    if (ratingsSnap.val() != null) {
+                    if (ratingsSnap.val() !== null) {
                         const ratings = Object.keys(ratingsSnap.val());
                         if (ratings.length > 0) {
                             this.setState({ hasContracts: true });
@@ -69,7 +65,7 @@ export class Rate extends React.Component<{}, RateState> {
             this.setState({
                 callback: () => {
                     const rating = this.state.rating;
-                    if (rating && rating != "") {
+                    if (rating && rating !== "") {
                         try {
                             database.review(contract, this.state.currentUid, targetUid, +rating, this.state.tag as (database.Tags | undefined));
                             this.setState({
@@ -90,7 +86,7 @@ export class Rate extends React.Component<{}, RateState> {
 
     render() {
         const contracts = Object.entries(this.state.contracts);
-        if (contracts.length == 0 && this.state.hasContracts) {
+        if (contracts.length === 0 && this.state.hasContracts) {
             return (<div className="d-flex align-items-center">
                 <strong>Loading...</strong>
                 <div className="spinner-border ml-auto text-success" role="status" aria-hidden="true"></div>
@@ -147,8 +143,8 @@ export class Rate extends React.Component<{}, RateState> {
                             .map(([uniqid, c]) => (
                                 <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
                                     let roles = Object.values(users).map((u: database.Person) => {
-                                        if (u.uid != this.state.currentUid &&
-                                            c.people[u.uid].role != database.Role.Arbitrator) {
+                                        if (u.uid !== this.state.currentUid &&
+                                            c.people[u.uid].role !== database.Role.Arbitrator) {
                                             return (
                                                 <button key={`rate-${u.uid}`}
                                                     className="btn btn-info btn-sm"
@@ -173,8 +169,8 @@ export class Rate extends React.Component<{}, RateState> {
                             .map(([uniqid, c]) => (
                                 <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
                                     let roles = Object.values(users).map((u: database.Person) => {
-                                        if (u.uid != this.state.currentUid &&
-                                            c.people[u.uid].role != database.Role.Arbitrator) {
+                                        if (u.uid !== this.state.currentUid &&
+                                            c.people[u.uid].role !== database.Role.Arbitrator) {
                                             return (
                                                 <button key={`rate-${u.uid}`}
                                                     className="btn btn-info btn-sm"

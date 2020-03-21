@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css';
 import * as database from './DataOperations';
-import CSS from 'csstype';
 import {
     Switch,
     matchPath,
@@ -9,7 +8,6 @@ import {
     Link,
     RouteComponentProps
 } from 'react-router-dom';
-import { Contract } from './Contract';
 import { ContractCreator } from './ContractCreator';
 import { ContractAccept } from './ContractAccept';
 import { Rate } from './Rate';
@@ -45,7 +43,7 @@ class Dashboard extends React.Component<DashProps, DashState> {
 
     componentDidUpdate() {
         // Update caused by change to UID in URL, which means we need to update the info we're showing.
-        if (this.state.uid != this.props.match.params.uid) {
+        if (this.state.uid !== this.props.match.params.uid) {
             database.fireapp.database()
                 .ref('/people/' + this.props.match.params.uid + '/metadata')
                 .on('value', snapshot => {
@@ -64,10 +62,10 @@ class Dashboard extends React.Component<DashProps, DashState> {
             !!matchPath(url, '/dashboard/:uid/create') ? 'active' : '',
             !!matchPath(url, '/dashboard/:uid/review') ? 'active' : '',
         ];
-        const profileActive = actives.slice(1).every(x => x == '') && actives[0];
+        const profileActive = actives.slice(1).every(x => x === '') && actives[0];
         // @ts-ignore: Object is possibly 'null'.
         const cuser = database.fireapp.auth().currentUser;
-        if (cuser && cuser.uid == this.props.match.params.uid) {
+        if (cuser && cuser.uid === this.props.match.params.uid) {
             let match = this.props.match;
             if (!this.state.error) {
                 return (

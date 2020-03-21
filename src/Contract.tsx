@@ -1,6 +1,5 @@
 import React from 'react';
 import * as database from './DataOperations';
-import CSS from 'csstype';
 import { Link } from 'react-router-dom';
 
 interface ContractProps {
@@ -37,7 +36,6 @@ export class Contract extends React.Component<ContractProps, { users: database.P
 
     render() {
         // @ts-ignore: Object is possibly 'null'.
-        const cuid = database.fireapp.auth().currentUser.uid;
         return (
             <div className="card m-1">
                 <div className="card-body">

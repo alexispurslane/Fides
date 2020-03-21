@@ -1,9 +1,5 @@
 import React from 'react';
 import * as database from './DataOperations';
-import CSS from 'csstype';
-import {
-    Link,
-} from 'react-router-dom';
 import { Contract } from './Contract';
 
 interface AcceptState {
@@ -45,7 +41,7 @@ export class ContractAccept extends React.Component<{}, AcceptState> {
 
     handleSelection = (ty: number, uniqid: string) => {
         let uref = database.fireapp.database().ref('/people/' + this.state.currentUid);
-        if (ty == 0) {
+        if (ty === 0) {
             database.acceptContract(uref, uniqid);
         } else {
             database.rejectContract(uref, uniqid);

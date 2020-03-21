@@ -3,7 +3,6 @@ import * as firebase from 'firebase/app';
 import * as database from './DataOperations';
 import * as firebaseui from 'firebaseui'
 import CSS from 'csstype';
-import { Link } from 'react-router-dom';
 
 const fireui = new firebaseui.auth.AuthUI(database.fireapp.auth());
 
