@@ -15,7 +15,8 @@ interface RateState {
     callback: () => void,
     rating: string,
     hasContracts: boolean,
-    banner: JSX.Element | null
+    banner: JSX.Element | null,
+    tag?: string
 }
 
 export class Rate extends React.Component<{}, RateState> {
@@ -23,6 +24,7 @@ export class Rate extends React.Component<{}, RateState> {
         super(props);
 
         this.state = {
+            tag: undefined,
             contracts: {},
             callback: () => { },
             rating: "",
@@ -44,7 +46,6 @@ export class Rate extends React.Component<{}, RateState> {
                         }
                         ratings.forEach(uniqid => {
                             database.fireapp.database().ref('/contracts/' + uniqid).on('value', contractSnap => {
-                                console.log(uniqid, contractSnap.val());
                                 this.setState(state => {
                                     return {
                                         contracts: Object.assign(state.contracts,
@@ -61,25 +62,29 @@ export class Rate extends React.Component<{}, RateState> {
 
     callHandlerWrapped = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, contract: database.Contract, targetUid: string) => {
         e.preventDefault();
-        $('#rateModal').modal('show');
-        this.setState({
-            callback: () => {
-                const rating = this.state.rating;
-                if (rating) {
-                    try {
-                        database.review(contract, this.state.currentUid, targetUid, +rating);
-                        this.setState({
-                            banner: <div className="alert alert-success"><b>Success</b> Rating posted</div>
-                        })
-                    } catch (e) {
-                        this.setState({
-                            banner: <div className="alert alert-danger"><b>{e.name}</b> {e.message}</div>
-                        });
-                    } finally {
-                        setTimeout(_ => this.setState({ banner: null }), 3500);
+        database.fireapp.database().ref('/people/' + targetUid + '/ratings/' + contract.uniqid + '/rawRating').once('value', snap => {
+            console.log(snap.val());
+            this.setState({ rating: "" + snap.val() });
+            $('#rateModal').modal('show');
+            this.setState({
+                callback: () => {
+                    const rating = this.state.rating;
+                    if (rating && rating != "") {
+                        try {
+                            database.review(contract, this.state.currentUid, targetUid, +rating, this.state.tag as (database.Tags | undefined));
+                            this.setState({
+                                banner: <div className="alert alert-success"><b>Success</b> Rating posted</div>
+                            })
+                        } catch (e) {
+                            this.setState({
+                                banner: <div className="alert alert-danger"><b>{e.name}</b> {e.message}</div>
+                            });
+                        } finally {
+                            setTimeout(_ => this.setState({ banner: null }), 3500);
+                        }
                     }
                 }
-            }
+            });
         });
     }
 
@@ -101,11 +106,20 @@ export class Rate extends React.Component<{}, RateState> {
                                     <h5 className="modal-title">How would you like to rate this person?</h5>
                                 </div>
                                 <div className="modal-body">
-                                    <p>Please be careful and thoughtful&mdash;this does effect how they look to other people! Also, please choose a number between ten and negative ten.</p>
+                                    <p>Please be careful and
+                                    thoughtful&mdash;this does effect how they
+                                    look to other people! Also, please choose a
+                                    number between ten and negative ten.</p>
                                 </div>
                                 <div className="modal-footer">
+                                    {Object.values(database.Tags).filter(k => typeof k === "string").map(option => {
+                                        return (
+                                            <h6 style={{ display: 'inline' }} key={option}><button onClick={e => this.setState({ tag: option })}
+                                                className={"badge badge-" + (option === this.state.tag ? "primary" : "secondary")}>{option}</button></h6>
+                                        );
+                                    })}
                                     <div>
-                                        <h6><span className="badge badge-secondary">{this.state.rating}</span></h6>
+                                        <h6 style={{ display: 'inline' }}>{this.state.rating}</h6>
                                         {[...Array(21).keys()].map((_, i) => {
                                             return (
                                                 <button id={i.toString()} key={i}
@@ -114,7 +128,7 @@ export class Rate extends React.Component<{}, RateState> {
                                                     <FontAwesomeIcon
                                                         icon={faStar}
                                                         color={+this.state.rating >= i - 10 ?
-                                                            'gold' : 'black'} />
+                                                            '#007bff' : 'gray'} />
                                                 </button>
                                             );
                                         })}
@@ -122,7 +136,7 @@ export class Rate extends React.Component<{}, RateState> {
                                     <hr />
                                     <input type="submit" className="btn btn-success" data-dismiss="modal"
                                         onClick={this.state.callback.bind(this)} value="Rate" />
-                                    <button className="btn btn-warning" data-dismiss="modal">Nevermind</button>
+                                    <button className="btn btn-danger" data-dismiss="modal">Nevermind</button>
                                 </div>
                             </div>
                         </div>

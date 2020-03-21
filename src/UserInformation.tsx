@@ -30,7 +30,14 @@ interface UIProps {
 }
 
 interface UIState {
-    info?: { name: string, photo: string, email: string, bio?: string, score: number },
+    info?: {
+        name: string,
+        photo: string,
+        email: string,
+        bio?: string,
+        score: number,
+        tags: { [tag in database.Tags]: number }
+    },
     showBanner: boolean
 }
 
@@ -43,7 +50,12 @@ export class UserInformation extends React.Component<UIProps, UIState> {
     componentDidMount() {
         database.fireapp.database()
             .ref('/people/' + this.props.user).on('value', snapshot => {
-                this.setState({ info: Object.assign(snapshot.val().metadata, { score: snapshot.val().score }) });
+                this.setState({
+                    info: Object.assign(snapshot.val().metadata, {
+                        score: snapshot.val().score,
+                        tags: snapshot.val().tags
+                    })
+                });
             })
     }
 
@@ -161,6 +173,14 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                         <div className="card-body" style={{ textAlign: 'center' }}>
                             <h5 className="card-title" style={{ fontVariant: 'small-caps' }}>SCORE</h5>
                             <h1><span className={`badge badge-${scoreColor}`}>{this.state.info?.score}</span></h1>
+                            {Object.keys(this.state.info.tags || []).map(option => {
+                                let value = this.state.info?.tags[option as database.Tags];
+                                return (
+                                    <h6 style={{ display: 'inline' }}>
+                                        <span className={"badge badge-secondary"}>{option} {value}</span>
+                                    </h6>
+                                );
+                            })}
                         </div>
                     </div>
                     <br />

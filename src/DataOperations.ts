@@ -16,16 +16,31 @@ const firebaseConfig = {
 
 export const fireapp = firebase.initializeApp(firebaseConfig);
 
+export enum Tags {
+    Trustworthy = "Trustworthy",
+    OnTime = "On Time, Observed Deadline",
+    NoTime = "Not On Time",
+    WrongOutcomeGood = "Misunderstood Me, Tried Their Best",
+    WrongOutcomeBad = "Misunderstood Me, Didn't Even Try",
+    NoLikeGood = "I Didn't Like The Results, Tried Their Best",
+    NoLikeBad = "I Didn't Like The Results, Didn't Even Try",
+}
+
 export interface Rating {
     uid: string,
-    rating: number
+    rating: number,
+    rawRating: number,
+    tag?: Tags
 }
+
+type TagData = { [tag in Tags]: number };
 
 export interface Person {
     uid: string,
     ratings: { [contractId: string]: Rating },
     score: number,
     metadata: { email: string, name: string, photo: string },
+    tags?: TagData,
 }
 
 function adjustRatingWeight(rating: number, x: number): number {
@@ -42,6 +57,13 @@ export function updateScore(ref: firebase.database.Reference) {
         let person = snapshot.val() as Person;
         // Take only the entries that actually have a rating, i.e. from finished contracts
         let ratings = Object.values(person.ratings).filter((x: Rating) => !!x.rating);
+        // Handle tags
+        let tags = ratings.reduce(
+            (acc: TagData, x: Rating) => x.tag ? Object.assign(acc, { [x.tag]: ((acc && acc[x.tag]) || 0) + 1 }) : acc,
+            {} as TagData
+        );
+        console.log(tags);
+        ref.child('tags').set(tags);
         if (Object.keys(ratings).length > 0) {
             // sum up all the ratings from each user, adjusted for the amount of
             // experience that user has with this one
@@ -158,7 +180,7 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
     });
 }
 
-export function review(contract: Contract, uid: string, target: string, rating: number) {
+export function review(contract: Contract, uid: string, target: string, rating: number, tag?: Tags) {
     if (!contract.roles[Role.Other]) {
         throw new Error("Not enough people to review.");
     }
@@ -198,19 +220,21 @@ export function review(contract: Contract, uid: string, target: string, rating: 
             });
             experience = raters[uid];
         }
-        if (!tpSnap.hasChild('ratings/' + contract.uniqid)) {
-            tpRef.child('ratings/' + contract.uniqid).set({
-                uid: uid,
-                rating: adjustRatingWeight(contract.people[uid].initialScore * rating, experience)
-            });
-            updateScore(tpRef);
-        } else {
-            alreadyExists = true;
-        }
+        //if (!tpSnap.hasChild('ratings/' + contract.uniqid)) {
+        tpRef.child('ratings/' + contract.uniqid).set({
+            uid: uid,
+            rating: adjustRatingWeight(contract.people[uid].initialScore * rating, experience),
+            rawRating: rating,
+            tag: tag || null,
+        });
+        updateScore(tpRef);
+        // } else {
+        //     alreadyExists = true;
+        // }
     });
-    if (alreadyExists) {
-        throw new Error("You have already rated this person for this contract!");
-    }
+    // if (alreadyExists) {
+    //     throw new Error("You have already rated this person for this contract!");
+    // }
 }
 
 export function newPerson(person: Person) {
