@@ -124,6 +124,7 @@ interface PersonRef {
     initialScore: number,
     uid: string,
     role: Role,
+    name: string,
     accepted: boolean,
 }
 
@@ -157,6 +158,7 @@ export function associateContract(ref: firebase.database.Reference, uid: string)
             pref.once('value', snapshot => {
                 let pr = {
                     initialScore: snapshot.val().score,
+                    name: snapshot.val().metadata.name,
                     uid: uid,
                     role: role,
                     accepted: role === Role.Initiator,

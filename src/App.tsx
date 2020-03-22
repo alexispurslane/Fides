@@ -16,6 +16,7 @@ import { SignIn, SignOut } from './UserManagement';
 import { Dashboard } from './Dashboard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBalanceScale, faBolt, faGlobeAmericas, faHandshake } from '@fortawesome/free-solid-svg-icons'
+import { ViewContracts, ViewDashboards } from './ViewPages';
 
 function HomePage() {
     return (
@@ -26,7 +27,7 @@ function HomePage() {
                 <hr className="my-4" />
                 <p>If you already have an account, or want one, just click the&nbsp;
             <kbd>Sign Up</kbd> button below, or the <kbd>Sign In</kbd> button
-                                                                                                                                                                                                                                                                                    above! Accounts are free and super fast to make, and we will not
+                                                                                                                                                                                                                                                                                                            above! Accounts are free and super fast to make, and we will not
             harass you with marketing emails.</p>
                 <div className="lead">
                     <div className="btn-group">
@@ -79,7 +80,7 @@ function HomePage() {
                     all of your peers will rate you using an easy to use and
                     proportionate rating system based on how well
                     <em>they</em>&nbsp; were satisfied with their "contract"
-                                with you. Make your peers happy, and more people will be
+                                            with you. Make your peers happy, and more people will be
                     willing to trust you, because your score will be higher!</p>
                 </div>
             </div>
@@ -155,7 +156,9 @@ class NavbarRaw extends React.Component<NavProps, State> {
         ]
         return (
             this.state.uid === "!!unknown!!" ?
-                (<div className="spinner-border ml-auto text-secondary" role="status" aria-hidden="true"></div>) : (
+                (<div className="spinner-border ml-auto text-secondary"
+                    role="status"
+                    aria-hidden="true"></div>) : (
                     this.state.signedIn ?
                         signedIn :
                         signedOut)
@@ -194,10 +197,9 @@ function App() {
                         <Switch>
                             <Route path="/signin" component={SignIn}></Route>
                             <Route path="/dashboard/:uid" component={Dashboard}></Route>
-                            {/*
-                        <Route path="/contracts" component={ViewContracts}></Route>
-                        <Route path="/contracts/:uniqid" component={ViewContracts}></Route>
-                        <Route path="/users" component={ViewDashboards}></Route>*/}
+                            <Route path="/contracts" component={ViewContracts}></Route>
+                            <Route path="/contracts/:uniqid" component={ViewContracts}></Route>
+                            <Route path="/users" component={ViewDashboards}></Route>
                             <Route path="/">
                                 <HomePage />
                             </Route>
