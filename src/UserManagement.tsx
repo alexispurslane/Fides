@@ -56,6 +56,7 @@ class SignIn extends React.Component<{ history?: any }> {
                                 name: authResult.user.displayName,
                                 email: authResult.user.email,
                                 photo: authResult.user.photoURL,
+                                bio: ""
                             }
                         });
                     }

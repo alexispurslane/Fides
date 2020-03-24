@@ -11,6 +11,7 @@ interface CCState {
     title: string,
     deadline: string,
     desc: string,
+    hidden: string,
     userlist: [string | null, string | null],
     people: database.Person[],
     showBanner: boolean,
@@ -28,6 +29,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
             desc: '',
             userlist: [null, null],
             people: [],
+            hidden: "",
             showBanner: false,
             personListShowNumber: 2,
             personListOffset: 0,
@@ -83,6 +85,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                 title: this.state.title,
                 deadline: this.state.deadline,
                 desc: this.state.desc,
+                hidden: !!this.state.hidden,
                 people: {},
                 roles: {}
             };
@@ -152,7 +155,14 @@ export class ContractCreator extends React.Component<{}, CCState> {
                                 onChange={e => this.handleChange(e, 'title')} />
                             <small id="titleHelp" className="form-text text-muted">
                                 This is a short few-word description of what the contract is about. Be descriptive!
-                </small>
+                            </small>
+                        </div>
+                    </div>
+                    <div className="form-check">
+                        <label className="form-check-label" htmlFor="exampleCheck1">Is this contract private?</label>
+                        <div className="col-sm-10">
+                            <input value={this.state.hidden}
+                                onChange={e => this.handleChange(e, 'hidden')} type="checkbox" className="form-check-input" id="exampleCheck1" />
                         </div>
                     </div>
                     <div className="form-group row">
@@ -164,7 +174,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                                 value={this.state.desc} onChange={e => this.handleChange(e, 'desc')} />
                             <small id="descHelp" className="form-text text-muted">
                                 This can be as long as you need it to be, and try to be specific about what you want to prevent miscommunication.
-            </small>
+                            </small>
                         </div>
                     </div>
                     <div className="form-group row">
@@ -177,7 +187,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
                                 onChange={e => this.handleChange(e, 'deadline')} />
                             <small id="deadlineHelp" className="form-text text-muted">
                                 This is when the contract should be fullfilled. You cannot review others in the contract before this date.
-            </small>
+                            </small>
                         </div>
                     </div>
                     <input className="btn btn-success"
@@ -243,7 +253,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
     }
 }
 
-function Person(props: {
+export function Person(props: {
     data: database.Person,
     selected: number,
     selection: (ty: number, uid: string) => boolean

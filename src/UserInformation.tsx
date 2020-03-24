@@ -180,7 +180,7 @@ export class UserInformation extends React.Component<UIProps, UIState> {
                     {internals}
                 </div>) : (<div className="d-flex align-items-center">
                     <strong>Loading...</strong>
-                    <div className="spinner-border ml-auto text-success" role="status" aria-hidden="true"></div>
+                    <div className="spinner-border ml-auto text-warning" role="status" aria-hidden="true"></div>
                 </div>)}
             </div>
         );

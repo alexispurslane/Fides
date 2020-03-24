@@ -39,7 +39,7 @@ export interface Person {
     uid: string,
     ratings: { [contractId: string]: Rating },
     score: number,
-    metadata: { email: string, name: string, photo: string },
+    metadata: { email: string, name: string, photo: string, bio: string },
     tags?: TagData,
 }
 
@@ -133,6 +133,7 @@ export interface Contract {
     title: string,
     deadline: string,
     desc?: string,
+    hidden: boolean,
 
     people: { [uid: string]: PersonRef },
     roles: { [role: string]: PersonRef },

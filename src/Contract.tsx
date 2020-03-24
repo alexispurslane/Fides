@@ -39,7 +39,7 @@ export class Contract extends React.Component<ContractProps, { users: database.P
         return (
             <div className="card m-1">
                 <div className="card-body">
-                    <h5 className="card-title">{this.props.data.title}</h5>
+                    <h5 className="card-title"><a href={"/contract/" + this.props.data.uniqid}>{this.props.data.title}</a></h5>
                     <h6 className="card-subtitle mb-2 text-muted">{this.props.data.deadline}</h6>
                     <p className="card-text">{this.props.data.desc}</p>
                     {!!this.props.render ? this.props.render(this.state.users) : this.props.children}
