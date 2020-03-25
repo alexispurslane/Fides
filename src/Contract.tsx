@@ -16,6 +16,11 @@ function capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+function autoGrow(el: any) {
+    el.style.height = "55px";
+    el.style.height = (el.scrollHeight) + "px";
+}
+
 export class Contract extends React.Component<ContractProps, {
     users: { [uid: string]: database.Person },
     commentText: string
@@ -68,19 +73,31 @@ export class Contract extends React.Component<ContractProps, {
             <div className="comments" style={{ backgroundColor: "#eff", }}>
                 {Object.values(this.props.data.comments || []).map((c: database.CommentEntry, i: number) =>
                     <Comment key={i} isPov={c.p.uid == database.fireapp.auth().currentUser?.uid} data={c} />)}
-                <div className="input-group" style={{ padding: "15px 30px", width: "100%", height: "100px" }}>
+                <div className="input-group" style={{ padding: "15px 30px", width: "100%" }}>
                     <textarea value={this.state.commentText}
+                        id="message"
                         className="form-control"
                         aria-label="Send message"
-                        style={{ resize: "none" }}
+                        style={{ resize: "vertical", padding: "15px", maxHeight: "100px", height: "55px" }}
                         placeholder="Your message..."
-                        onChange={e => this.setState({ commentText: e.target.value })}></textarea>
+                        onKeyPress={e => {
+                            if (e.key == "Enter" && !e.shiftKey) {
+                                this.makeComment(e);
+                                e.preventDefault();
+                            }
+                        }}
+                        onChange={e => {
+                            autoGrow(e.target);
+                            this.setState({ commentText: e.target.value });
+                        }}></textarea>
                     <div className="input-group-append">
-                        <button className="btn btn-outline-secondary" type="button" id="button-addon2" onClick={this.makeComment}>Send</button>
+                        <button className="btn btn-outline-secondary" type="button" id="button-addon2"
+                            onClick={this.makeComment}>Send</button>
                     </div>
                 </div>
             </div>
         );
+
         // @ts-ignore: Object is possibly 'null'.
         return (
             <div>
@@ -115,6 +132,26 @@ export class Contract extends React.Component<ContractProps, {
     }
 }
 
+function toFuzzyTime(milliseconds: number) {
+    const times: { [key: string]: number } = {
+        "years": (60000 * 60 * 24) * 30 * 12,
+        "months": (60000 * 60 * 24) * 30,
+        "days": 60000 * 60 * 24,
+        "hours": 60000 * 60,
+        "mins": 60000,
+    };
+    let fuzzy = [];
+    for (let key in times) {
+        const val = Math.floor(milliseconds / times[key]);
+        if (val > 0) {
+            fuzzy.push((val).toString() + " " + key);
+        }
+        milliseconds %= times[key];
+        console.log(milliseconds);
+    }
+    return fuzzy.join(" and ") + " ago";
+}
+
 export function Comment(props: {
     data: database.CommentEntry,
     isPov: boolean
@@ -127,9 +164,9 @@ export function Comment(props: {
         marginRight: '10px',
         display: 'block'
     };
-    const fuzzyTime = new Date().getTime() - new Date(props.data.date).getTime();
+    const fuzzyTime = toFuzzyTime(new Date().getTime() - new Date(props.data.date).getTime());
     const user = (
-        <Column key="user" alignItems="center" flexGrow={1}>
+        <Column key="user" alignItems="center" style={{ maxWidth: "80px" }}>
             <a href={`/dashboard/${props.data.p.uid}`}>
                 <UserAvatar style={imageStyle}
                     avatar={props.data.p.metadata.photo} />
@@ -139,21 +176,25 @@ export function Comment(props: {
     );
     const comment = (
         <Column key="comment" style={{
-            padding: "10px 10px 10px 10px"
+            padding: "10px 10px 10px 10px",
         }}
-            flexGrow={6}
-            className={"talk-bubble tri-right " + (!props.isPov ? "left-top" : "right-top")}>
-            {props.data.comment}
+            flexBasis="40%"
+            className={"talk-bubble tri-right " + (!props.isPov ? "left-top" : "right-top")} >
+            {
+                props.data.comment.split('\n').map((item, i) => {
+                    return <span key={i}>{item}<br /></span>;
+                })
+            }
         </Column>
     );
+    console.log(!props.isPov ? "flex-start" : "flex-end");
     return (
-        <div>
-            <Row vertical='baseline' horizontal='start' flexBasis="100%"
-                style={{
-                    padding: "0px 30px",
-                }}>
-                {!props.isPov ? [user, comment] : [comment, user]}
-            </Row>
-        </div>
+        <Row vertical='baseline'
+            horizontal={!props.isPov ? "flex-start" : "flex-end"}
+            style={{
+                padding: "0px 30px",
+            }} className="commentrow">
+            {!props.isPov ? [user, comment] : [comment, user]}
+        </Row>
     );
 }

@@ -43,6 +43,7 @@ kbd {
 	width: 200px;
 	height: auto;
 	background-color: #33adff;
+  border-radius: 5px;
 }
 .border{
   border: 8px solid #666;

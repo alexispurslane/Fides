@@ -17,7 +17,14 @@ interface CCState {
     showBanner: boolean,
     personListShowNumber: number,
     personListOffset: number,
+    search: string
 }
+
+const fuzzyMatchUser = (search: string) => (user: database.Person) => {
+    return user.metadata.name.toLowerCase().includes(search.toLowerCase()) ||
+        user.metadata.email.toLowerCase().includes(search.toLowerCase()) ||
+        (user.metadata.bio || "").toLowerCase().includes(search.toLowerCase());
+};
 
 export class ContractCreator extends React.Component<{}, CCState> {
     constructor(props: {}) {
@@ -27,6 +34,7 @@ export class ContractCreator extends React.Component<{}, CCState> {
             title: '',
             deadline: '',
             desc: '',
+            search: "",
             userlist: [null, null],
             people: [],
             hidden: "",
@@ -159,11 +167,18 @@ export class ContractCreator extends React.Component<{}, CCState> {
                             </small>
                         </div>
                     </div>
-                    <div className="form-check">
-                        <label className="form-check-label" htmlFor="exampleCheck1">Is this contract private?</label>
+                    <div className="form-group row">
+                        <label className="col-sm-2 col-form-label" htmlFor="exampleCheck1">Is this contract private?</label>
                         <div className="col-sm-10">
-                            <input value={this.state.hidden}
-                                onChange={e => this.handleChange(e, 'hidden')} type="checkbox" className="form-check-input" id="exampleCheck1" />
+                            <div className="custom-control custom-switch" style={{ paddingTop: "16px" }}>
+                                <input value={this.state.hidden}
+                                    onChange={e => this.handleChange(e, 'hidden')} type="checkbox" className="custom-control-input" id="customSwitch1" />
+                                <label className="custom-control-label" htmlFor="customSwitch1">
+                                    <small id="titleHelp" className="form-text text-muted">
+                                        If this contract is not "hidden" it, and everything associated with it, will be totally public.
+                                    </small>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div className="form-group row">
@@ -191,46 +206,36 @@ export class ContractCreator extends React.Component<{}, CCState> {
                             </small>
                         </div>
                     </div>
-                    <input className="btn btn-success"
-                        type="submit" value="Submit" disabled={!(this.state.title !== '' &&
-                            this.state.userlist[0] !== null &&
-                            this.state.deadline !== '')} />
-                    {this.state.showBanner ?
-                        <div className="alert alert-primary" role="alert">
-                            <b>Success</b> Contract successfully created and sent!
-                     </div> : null}
                     <br />
                     <br />
-                    <div className="form" style={{ float: 'right', paddingRight: '15px' }}>
-                        <div className="row">
-                            <div className="form-group col-xs-6 m-1">
-                                <nav aria-label="Page navigation example">
-                                    <ul className="pagination">
-                                        <li className="page-item"><a className="page-link" onClick={this.prevPage}>
-                                            <FontAwesomeIcon icon={faChevronLeft} />
-                                        </a></li>
-                                        <li className="page-item"><a className="page-link" onClick={this.nextPage}>
-                                            <FontAwesomeIcon icon={faChevronRight} />
-                                        </a></li>
-                                    </ul>
-                                </nav>
-                            </div>
-                            <div className="form-group col-xs-6 m-1">
-                                <div className="dropdown">
-                                    <button className="btn btn-outline-secondary dropdown-toggle"
-                                        type="button"
-                                        id="dropdownMenuButton"
-                                        data-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false">
-                                        Show #</button>
-                                    <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        {[2, 5, 10, 15].map(i => {
-                                            return (<a className="dropdown-item"
-                                                onClick={this.changeNumber(i)} key={i}>{i}</a>);
-                                        })}
-                                    </div>
-                                </div>
+                    <div className="form-inline">
+                        <input type="text" className="form-control" placeholder="Search..." style={{ marginBottom: "16px" }}
+                            onChange={e => this.setState({ search: e.target.value })} />
+                        <div style={{ marginLeft: "16px" }}>
+                            <nav aria-label="Page navigation example">
+                                <ul className="pagination">
+                                    <li className="page-item"><a className="page-link" onClick={this.prevPage}>
+                                        <FontAwesomeIcon icon={faChevronLeft} />
+                                    </a></li>
+                                    <li className="page-item"><a className="page-link" onClick={this.nextPage}>
+                                        <FontAwesomeIcon icon={faChevronRight} />
+                                    </a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div className="dropdown" style={{ marginBottom: "16px", marginLeft: "16px" }}>
+                            <button className="btn btn-outline-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                                Show #</button>
+                            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {[2, 5, 10, 15].map(i => {
+                                    return (<a className="dropdown-item"
+                                        onClick={this.changeNumber(i)} key={i}>{i}</a>);
+                                })}
                             </div>
                         </div>
                     </div>
@@ -242,13 +247,23 @@ export class ContractCreator extends React.Component<{}, CCState> {
                             </tr>
                         </thead>
                         <tbody>
-                            {this.peopleList.map((p: database.Person) =>
+                            {this.peopleList.filter(fuzzyMatchUser(this.state.search)).map((p: database.Person) =>
                                 <Person key={p.uid} data={p}
                                     selected={this.state.userlist.indexOf(p.uid)}
                                     selection={this.onPersonSelection} />)}
                         </tbody>
                     </table>
                 </form>
+                <br />
+                <br />
+                <input className="btn btn-success"
+                    type="submit" value="Submit" disabled={!(this.state.title !== '' &&
+                        this.state.userlist[0] !== null &&
+                        this.state.deadline !== '')} />
+                {this.state.showBanner ?
+                    <div className="alert alert-primary" role="alert">
+                        <b>Success</b> Contract successfully created and sent!
+                 </div> : null}
             </div >
         );
     }

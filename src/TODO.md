@@ -7,7 +7,9 @@
 - [x] Create Contracts tab
 - [x] Create Users tab
 - [x] Make contract titles public (depending on private/public option in creator)
-- [ ] Add comments to contracts
+- [x] Add comments to contracts
+- [x] Improve contract comment features
+- [x] Search button and fix UI for contract creator
 - [ ] Proof document file upload and rating by arbiters
 - [ ] Security measure module system
 - [ ] Security measure toggle admin interface
