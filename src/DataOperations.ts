@@ -128,12 +128,15 @@ interface PersonRef {
     accepted: boolean,
 }
 
+export interface CommentEntry { p: Person, comment: string, date: string };
+
 export interface Contract {
     uniqid: string,
     title: string,
     deadline: string,
     desc?: string,
     hidden: boolean,
+    comments: { [id: string]: CommentEntry },
 
     people: { [uid: string]: PersonRef },
     roles: { [role: string]: PersonRef },

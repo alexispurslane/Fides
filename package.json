@@ -12,7 +12,7 @@
     "bootstrap": "^4.4.1",
     "bootstrap-material-design": "^4.1.2",
     "firebase": "^7.8.2",
-    "firebase-tools": "^7.13.0",
+    "firebase-tools": "^7.16.0",
     "firebaseui": "^4.4.0",
     "jquery": "^3.4.1",
     "popper.js": "^1.16.1",
@@ -20,6 +20,7 @@
     "react-dom": "^16.12.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
+    "simple-flexbox": "^2.3.0",
     "typescript": "^3.7.5"
   },
   "scripts": {

@@ -87,7 +87,8 @@ export class ContractCreator extends React.Component<{}, CCState> {
                 desc: this.state.desc,
                 hidden: !!this.state.hidden,
                 people: {},
-                roles: {}
+                roles: {},
+                comments: {}
             };
             let ref = database.newContract(c);
             database.associateContract(ref, this.state.userlist[0]);

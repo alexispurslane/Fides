@@ -3,12 +3,12 @@ import {
     RouteComponentProps,
     Link,
 } from 'react-router-dom';
-import { Contract } from './Contract';
 import * as database from './DataOperations';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import CSS from 'csstype';
 import { UserAvatar } from './UserInformation';
+import { Contract } from './Contract';
 
 interface MatchParams {
     uniqid: string,
@@ -70,9 +70,20 @@ export class ViewContracts extends React.Component<ViewProps, ContractsState> {
                         value={this.state.search}
                         onChange={e => this.setState({ search: e.target.value })} />
                 </div>
-                {this.state.contracts.filter(fuzzyMatch(this.state.search)).map(contract => {
-                    return (<Contract key={contract.uniqid} data={contract} render={() => undefined} />)
-                })}
+                <table className="table table-striped">
+                    <thead className="thead-dark">
+                        <tr>
+                            <th scope="col"> Name </th>
+                            <th scope="col"> Description </th>
+                            <th scope="col"> Deadline </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.state.contracts.filter(fuzzyMatch(this.state.search)).map(contract => {
+                            return (<TableContract key={contract.uniqid} data={contract} />)
+                        })}
+                    </tbody>
+                </table>
             </div>
         ) : null;
         const singleContract = this.state.contract ? (<div>
@@ -83,6 +94,7 @@ export class ViewContracts extends React.Component<ViewProps, ContractsState> {
                 </ol>
             </nav>
             <Contract
+                full={true}
                 data={this.state.contract}
                 render={() => undefined} />
         </div>) : null;
@@ -96,6 +108,25 @@ export class ViewContracts extends React.Component<ViewProps, ContractsState> {
             </div>
         );
     }
+}
+
+
+export function TableContract(props: {
+    data: database.Contract,
+}) {
+    return (
+        <tr className="table">
+            <td>
+                <a href={`/contract/${props.data.uniqid}`}>{props.data.title}</a>
+            </td>
+            <td>
+                <p className="text-muted"><small>{props.data.desc}</small></p>
+            </td>
+            <td>
+                <span className={`badge badge-primary`}>{props.data.deadline}</span>
+            </td>
+        </tr>
+    );
 }
 
 interface MatchParams2 {
