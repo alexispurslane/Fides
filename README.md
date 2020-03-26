@@ -40,6 +40,25 @@ willing to trust you, because your score will be higher!
 
 ## But How Exactly Does it Work?
 
+The entire algorithm is built around two main equations: first, the equation
+that adjusts individual ratings based on interaction experience level (i.e. how
+much experience the rater has had with the person they're rating) and two, the
+summary equation, which collates all of the ratings that someone has received
+and combines them into a trust score based on the average adjusted rating
+they've received per interaction. Note that each rating has *already* been
+weighted using the rater's trust score, using this equation: ![(rating) \times (experience)](https://render.githubusercontent.com/render/math?math=(rating)%20%5Ctimes%20(experience)).
+
+Here are the two equations:
+
+1. ![(rating) \times    \max{(0.001, 60 \times (\frac{1}{6.5 \times \sqrt{2 \times \pi}})} \times e^{-0.5 \times (\frac{(interactions) - 10}{6.5})^{2}})](https://render.githubusercontent.com/render/math?math=(rating)%20%5Ctimes%20%20%20%20%5Cmax%7B(0.001%2C%2060%20%5Ctimes%20(%5Cfrac%7B1%7D%7B6.5%20%5Ctimes%20%5Csqrt%7B2%20%5Ctimes%20%5Cpi%7D%7D)%7D%20%5Ctimes%20e%5E%7B-0.5%20%5Ctimes%20(%5Cfrac%7B(interactions)%20-%2010%7D%7B6.5%7D)%5E%7B2%7D%7D))
+2. ![\text{Let S =} \sum_{n=0}^{(ratings)}{r_n} \text{ and P = } \mid \lceil \log{\max{(0.001, S \div n)}} \rceil \mid \text{ in } \frac{\lfloor S * 10^{P} + 1 \rfloor}{10^{P}}](https://render.githubusercontent.com/render/math?math=%5Ctext%7BLet%20S%20%3D%7D%20%5Csum_%7Bn%3D0%7D%5E%7B(ratings)%7D%7Br_n%7D%20%5Ctext%7B%20and%20P%20%3D%20%7D%20%5Cmid%20%5Clceil%20%5Clog%7B%5Cmax%7B(0.001%2C%20S%20%5Cdiv%20n)%7D%7D%20%5Crceil%20%5Cmid%20%5Ctext%7B%20in%20%7D%20%5Cfrac%7B%5Clfloor%20S%20*%2010%5E%7BP%7D%20%2B%201%20%5Crfloor%7D%7B10%5E%7BP%7D%7D)
+
+Let's break down exactly what these equations are doing, step by step. I'll be
+supplementing with graphs, as well.
+
+#### Adjustment Equation
+#### Collation Equation
+
 ## Available Scripts (If You're Using a Local Version)
 
 In the project directory, you can run:
