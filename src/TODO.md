@@ -10,7 +10,11 @@
 - [x] Add comments to contracts
 - [x] Improve contract comment features
 - [x] Search button and fix UI for contract creator
-- [ ] Proof document file upload and rating by arbiters
+- [x] Proof document file upload and rating by arbiters
+- [ ] Add friend-feature
+- [ ] Limit allowed comments
+- [ ] Make proof file list auto-reload
+- [ ] Test arbiters
 - [ ] Security measure module system
 - [ ] Security measure toggle admin interface
 - [ ] Security measure modules
