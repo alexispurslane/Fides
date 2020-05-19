@@ -3,7 +3,16 @@ import * as database from './DataOperations';
 import $ from 'jquery';
 import { Contract } from './Contract';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faStar } from '@fortawesome/free-solid-svg-icons'
+import { faStar, faSearch } from '@fortawesome/free-solid-svg-icons'
+
+const fuzzyMatch = (search: string) => (contract: database.Contract) => {
+    return contract.deadline.includes(search) ||
+        contract.desc?.toLowerCase().includes(search.toLowerCase()) ||
+        contract.title.toLowerCase().includes(search.toLowerCase()) ||
+        Object.values(contract.people).some(x => (x.name || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()));
+};
 
 interface RateState {
     contracts: { [uniqid: string]: database.Contract },
@@ -12,6 +21,7 @@ interface RateState {
     rating: string,
     hasContracts: boolean,
     banner: JSX.Element | null,
+    search: string,
     tag?: string
 }
 
@@ -20,6 +30,7 @@ export class Rate extends React.Component<{}, RateState> {
         super(props);
 
         this.state = {
+            search: "",
             tag: undefined,
             contracts: {},
             callback: () => { },
@@ -94,6 +105,20 @@ export class Rate extends React.Component<{}, RateState> {
         } else {
             return (
                 <div>
+                    <div className="input-group mb-3">
+                        <div className="input-group-prepend">
+                            <span className="input-group-text" id="basic-addon1">
+                                <FontAwesomeIcon icon={faSearch} />
+                            </span>
+                        </div>
+                        <input type="search"
+                            className="form-control"
+                            placeholder="Search..."
+                            aria-label="Search"
+                            aria-describedby="basic-addon1"
+                            value={this.state.search}
+                            onChange={e => this.setState({ search: e.target.value })} />
+                    </div>
                     {this.state.banner}
                     <div className="modal" role="dialog" id="rateModal">
                         <div className="modal-dialog" role="document">
@@ -139,7 +164,7 @@ export class Rate extends React.Component<{}, RateState> {
                     </div>
                     <h2>Currently Active Contracts</h2>
                     <div className="card-columns">
-                        {contracts.filter(([_, c]) => new Date() <= new Date(c.deadline))
+                        {contracts.filter(([_, c]) => new Date() <= new Date(c.deadline) && fuzzyMatch(this.state.search)(c))
                             .map(([uniqid, c]) => (
                                 <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
                                     let roles = Object.values(users).map((u: database.Person) => {
@@ -165,7 +190,7 @@ export class Rate extends React.Component<{}, RateState> {
                     <br />
                     <h2>Completed/Past Due Contracts</h2>
                     <div className="card-columns">
-                        {contracts.filter(([_, c]) => new Date() > new Date(c.deadline))
+                        {contracts.filter(([_, c]) => new Date() > new Date(c.deadline) && fuzzyMatch(this.state.search)(c))
                             .map(([uniqid, c]) => (
                                 <Contract key={uniqid} data={c} render={(users: database.Person[]) => {
                                     let roles = Object.values(users).map((u: database.Person) => {
